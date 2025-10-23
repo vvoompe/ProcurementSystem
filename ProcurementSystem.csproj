@@ -222,6 +222,7 @@
     <Content Include="Views\Categories\Index.cshtml" />
     <Content Include="Views\Orders\Index.cshtml" />
     <Content Include="Views\Orders\Create.cshtml" />
+    <Content Include="Views\Products\View.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

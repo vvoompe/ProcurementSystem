@@ -1,45 +1,85 @@
-﻿@model IEnumerable<ProcurementSystem.Models.Product>
-
-@{
-    ViewBag.Title = "Index";
+﻿@{
+    // Встановлюємо заголовок сторінки, який буде відображено у вкладці браузера
+    ViewBag.Title = "Головна сторінка - Система Закупівель";
 }
 
-<h2>Index</h2>
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="my-4">Панель керування</h1>
+        <p class="lead">Ласкаво просимо до системи керування закупівлями. Оберіть розділ для роботи:</p>
+    </div>
+</div>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Category.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th></th>
-    </tr>
+<div class="row">
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Category.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
-        </td>
-    </tr>
-}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="card-title">📦 Керування Товарами</h4>
+                <p class="card-text">
+                    Перегляд, додавання, редагування та видалення товарів (продуктів) у системі.
+                </p>
+            </div>
+            <div class="card-footer">
+                @Html.ActionLink("Перейти до Товарів", "Index", "Products", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
 
-</table>
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="card-title">📚 Керування Категоріями</h4>
+                <p class="card-text">
+                    Налаштування категорій, до яких належать товари.
+                </p>
+            </div>
+            <div class="card-footer">
+                @Html.ActionLink("Перейти до Категорій", "Index", "Categories", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="card-title">🚚 Керування Постачальниками</h4>
+                <p class="card-text">
+                    Ведення списку постачальників та їхніх пропозицій.
+                </p>
+            </div>
+            <div class="card-footer">
+                @Html.ActionLink("Перейти до Постачальників", "Index", "Suppliers", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="card-title">🛒 Керування Замовленнями</h4>
+                <p class="card-text">
+                    Обробка та перегляд поточних та минулих замовлень.
+                </p>
+            </div>
+            <div class="card-footer">
+                @Html.ActionLink("Перейти до Замовлень", "Index", "Orders", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h4 class="card-title">👥 Керування Користувачами</h4>
+                <p class="card-text">
+                    Адміністрування облікових записів та ролей користувачів.
+                </p>
+            </div>
+            <div class="card-footer">
+                @Html.ActionLink("Перейти до Користувачів", "Index", "Users", null, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+
+</div>
