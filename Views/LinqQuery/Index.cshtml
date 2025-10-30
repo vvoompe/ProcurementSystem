@@ -1,60 +1,81 @@
-﻿@using ProcurementSystem.Models
+﻿@model IEnumerable<ProcurementSystem.Models.Product>
 @using ProcurementSystem.ViewModels
 
 @{
-    ViewBag.Title = "Тестові LINQ Запити";
+    ViewBag.Title = "Демонстрація LINQ запитів";
 
-    // Розпаковуємо дані з ViewBag
-    var expensiveProducts = ViewBag.ExpensiveProducts as List<Product>;
-    var laptops = ViewBag.Laptops as List<Product>;
-    var totalOrdersSum = (decimal)ViewBag.TotalOrdersSum;
-    var productsPerCategory = ViewBag.ProductsPerCategory as List<CategoryProductCountViewModel>;
-    var suppliersWithNoOffers = ViewBag.SuppliersWithNoOffers as List<Supplier>;
+    var expensiveProducts = ViewBag.ExpensiveProducts as List<ProcurementSystem.Models.Product> ?? new List<ProcurementSystem.Models.Product>();
+    var laptops = ViewBag.Laptops as List<ProcurementSystem.Models.Product> ?? new List<ProcurementSystem.Models.Product>();
+    var productsPerCategory = ViewBag.ProductsPerCategory as List<CategoryProductCountViewModel> ?? new List<CategoryProductCountViewModel>();
+    var suppliersWithNoOffers = ViewBag.SuppliersWithNoOffers as List<ProcurementSystem.Models.Supplier> ?? new List<ProcurementSystem.Models.Supplier>();
 }
 
 <h2>@ViewBag.Title</h2>
-<p>
-    Ця сторінка демонструє виконання 5 LINQ запитів згідно Лабораторної №3.
-</p>
-
 <hr />
-<h4>1. (Фільтрація) Товари, дорожчі за 50 000 грн:</h4>
-<table class="table table-striped">
-    <tr> <th>Назва</th> <th>Категорія</th> <th>Ціна</th> </tr>
+
+<h4>Демонстрація CUD (Add/Update/Delete)</h4>
+<div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9;">
+    @if (ViewBag.CreateMessage != null)
+    {
+        <p style="color: green;"><strong>Додавання:</strong> @ViewBag.CreateMessage</p>
+    }
+    @if (ViewBag.UpdateMessage != null)
+    {
+        <p style="color: blue;"><strong>Оновлення:</strong> @ViewBag.UpdateMessage</p>
+    }
+    @if (ViewBag.DeleteMessage != null)
+    {
+        <p style="color: red;"><strong>Видалення:</strong> @ViewBag.DeleteMessage</p>
+    }
+</div>
+<h4>Запит 1: (Фільтрація) Товари, дорожчі за 50 000 грн</h4>
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Назва</th>
+        <th>Ціна</th>
+        <th>Категорія</th>
+    </tr>
     @foreach (var item in expensiveProducts)
     {
         <tr>
             <td>@item.Name</td>
-            <td>@item.Category.Name</td>
             <td>@item.Price.ToString("C")</td>
+            <td>@(item.Category != null ? item.Category.Name : "N/A")</td>
         </tr>
     }
 </table>
-
 <hr />
-<h4>2. (Фільтрація) Всі товари з категорії "Ноутбуки":</h4>
-<table class="table table-striped">
-    <tr> <th>Назва</th> <th>Категорія</th> <th>Ціна</th> </tr>
+
+<h4>Запит 2: (Фільтрація) Всі товари з категорії "Ноутбуки"</h4>
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Назва</th>
+        <th>Ціна</th>
+        <th>Категорія</th>
+    </tr>
     @foreach (var item in laptops)
     {
         <tr>
             <td>@item.Name</td>
-            <td>@item.Category.Name</td>
             <td>@item.Price.ToString("C")</td>
+            <td>@(item.Category != null ? item.Category.Name : "N/A")</td>
         </tr>
     }
 </table>
-
 <hr />
-<h4>3. (Узагальнення - Sum) Загальна сума всіх замовлень:</h4>
+
+<h4>Запит 3: (Узагальнення - Sum) Загальна сума всіх замовлень</h4>
 <div class="alert alert-info">
-    <strong>@totalOrdersSum.ToString("C")</strong>
+    <strong>Загальна сума:</strong> @(((decimal?)ViewBag.TotalOrdersSum ?? 0.0m).ToString("C"))
 </div>
-
 <hr />
-<h4>4. (Узагальнення - GroupBy/Count) Кількість товарів по категоріях:</h4>
-<table class="table table-striped">
-    <tr> <th>Категорія</th> <th>Кількість товарів</th> </tr>
+
+<h4>Запит 4: (Узагальнення - GroupBy/Count) Кількість товарів по категоріях</h4>
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Категорія</th>
+        <th>Кількість товарів</th>
+    </tr>
     @foreach (var item in productsPerCategory)
     {
         <tr>
@@ -63,11 +84,14 @@
         </tr>
     }
 </table>
-
 <hr />
-<h4>5. (Фільтрація - Any) Постачальники без пропозицій:</h4>
-<table class="table table-striped">
-    <tr> <th>Назва</th> <th>Контактна інфо</th> </tr>
+
+<h4>Запит 5: (Фільтрація - Any) Постачальники без пропозицій</h4>
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Назва постачальника</th>
+        <th>Контакти</th>
+    </tr>
     @foreach (var item in suppliersWithNoOffers)
     {
         <tr>
