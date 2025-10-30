@@ -1,5 +1,4 @@
 ﻿@{
-    // Встановлюємо заголовок сторінки, який буде відображено у вкладці браузера
     ViewBag.Title = "Головна сторінка - Система Закупівель";
 }
 
@@ -21,7 +20,7 @@
                 </p>
             </div>
             <div class="card-footer">
-                @Html.ActionLink("Перейти до Товарів", "Index", "Products", null, new { @class = "btn btn-primary" })
+                @Html.ActionLink("Перейти до Товарів", "Create", "Products", null, new { @class = "btn btn-primary" })
             </div>
         </div>
     </div>
