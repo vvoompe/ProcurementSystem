@@ -1,30 +1,30 @@
-﻿@model IEnumerable<ProcurementSystem.Models.OrderItem>
+﻿@model IEnumerable<ProcurementSystem.Models.Order>
 
 @{
-    ViewBag.Title = "Позиції Замовлень";
+    ViewBag.Title = "Замовлення";
 }
 
 <h2>@ViewBag.Title</h2>
 
 <p>
-    @Html.ActionLink("Створити Нову", "Create")
+    @Html.ActionLink("Створити Нове", "Create", null, new { @class = "btn btn-primary" })
 </p>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Order.Id) (Замовл.)
+            @Html.DisplayNameFor(model => model.First().Id)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Offer.Product.Name) (Товар)
+            @Html.DisplayNameFor(model => model.First().OrderDate)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Quantity)
+            @Html.DisplayNameFor(model => model.First().Status)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.UnitPrice)
+            @Html.DisplayNameFor(model => model.First().TotalAmount)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Amount)
+            Користувач
         </th>
         <th></th>
     </tr>
@@ -33,19 +33,19 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Order.Id)
+                @Html.DisplayFor(modelItem => item.Id)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Offer.Product.Name)
+                @item.OrderDate.ToShortDateString()
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Quantity)
+                @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.UnitPrice)
+                @Html.DisplayFor(modelItem => item.TotalAmount)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Amount)
+                @(item.User != null ? item.User.Login : String.Empty)
             </td>
             <td>
                 @Html.ActionLink("Редагувати", "Edit", new { id = item.Id }) |
