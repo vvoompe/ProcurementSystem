@@ -29,12 +29,12 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            // Завантажуємо Замовлення разом з Користувачем, Позиціями та Рахунками
             Order order = db.Orders
                             .Include(o => o.User)
                             .Include(o => o.OrderItems.Select(oi => oi.Offer.Product))
                             .Include(o => o.Invoices)
                             .FirstOrDefault(o => o.Id == id);
+
             if (order == null)
             {
                 return HttpNotFound();
@@ -103,7 +103,6 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            // Завантажуємо разом з Користувачем для відображення
             Order order = db.Orders.Include(o => o.User).FirstOrDefault(o => o.Id == id);
             if (order == null)
             {
@@ -121,7 +120,7 @@ namespace ProcurementSystem.Controllers
             bool hasInvoices = db.Invoices.Any(i => i.OrderId == id);
             bool hasReportOrders = db.ReportOrders.Any(ro => ro.OrderId == id);
 
-            Order order = db.Orders.Find(id);
+            Order order = db.Orders.Find(id); // Знаходимо замовлення
 
             if (hasOrderItems || hasInvoices || hasReportOrders)
             {
@@ -131,6 +130,7 @@ namespace ProcurementSystem.Controllers
                 if (hasReportOrders) errorMessage += "Існують пов'язані звіти.";
 
                 ModelState.AddModelError("", errorMessage);
+
                 db.Entry(order).Reference(o => o.User).Load();
                 return View(order);
             }

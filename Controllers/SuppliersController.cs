@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem.Data;
+using ProcurementSystem;
 using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
@@ -43,8 +43,6 @@ namespace ProcurementSystem.Controllers
         }
 
         // POST: Suppliers/Create
-        // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
-        // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,Name,Contacts")] Supplier supplier)
@@ -75,8 +73,6 @@ namespace ProcurementSystem.Controllers
         }
 
         // POST: Suppliers/Edit/5
-        // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
-        // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Name,Contacts")] Supplier supplier)
@@ -110,7 +106,16 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
+            bool hasOffers = db.SupplierOffers.Any(o => o.SupplierId == id);
+
             Supplier supplier = db.Suppliers.Find(id);
+
+            if (hasOffers)
+            {
+                ModelState.AddModelError("", "Неможливо видалити постачальника, оскільки у нього є активні пропозиції товарів (SupplierOffers).");
+                return View(supplier);
+            }
+
             db.Suppliers.Remove(supplier);
             db.SaveChanges();
             return RedirectToAction("Index");

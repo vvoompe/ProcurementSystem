@@ -1,48 +1,42 @@
-﻿@model ProcurementSystem.Models.SupplierOffer
+﻿@model ProcurementSystem.Models.Supplier
 
 @{
-    ViewBag.Title = "Видалення пропозиції";
+    ViewBag.Title = "Видалити";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Видалити</h2>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+<h3 class="text-danger">Ви впевнені, що хочете видалити це?</h3>
 
-<h3>Ви впевнені, що хочете видалити це?</h3>
+@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+
 <div>
-    <h4>Пропозиція Постачальника</h4>
+    <h4>Постачальник</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Product.Name)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
+
         <dd>
-            @Html.DisplayFor(model => model.Product.Name)
+            @Html.DisplayFor(model => model.Name)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Supplier.Name)
+            @Html.DisplayNameFor(model => model.Contacts)
         </dt>
+
         <dd>
-            @Html.DisplayFor(model => model.Supplier.Name)
+            @Html.DisplayFor(model => model.Contacts)
         </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Price)
-        </dd>
     </dl>
 
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
 
-        <div class="form-actions no-color" style="margin-top: 10px;">
+        <div class="form-actions no-color" style="margin-top: 15px;">
             <input type="submit" value="Видалити" class="btn btn-danger" /> |
             @Html.ActionLink("Назад до списку", "Index")
         </div>

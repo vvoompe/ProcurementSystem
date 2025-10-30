@@ -1,35 +1,31 @@
-﻿@model ProcurementSystem.Models.SupplierOffer
+﻿@model ProcurementSystem.Models.Supplier
 
 @{
-    ViewBag.Title = "Деталі пропозиції";
+    ViewBag.Title = "Деталі";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Деталі</h2>
 
 <div>
-    <h4>Пропозиція Постачальника</h4>
+    <h4>Постачальник</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Product.Name)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
+
         <dd>
-            @Html.DisplayFor(model => model.Product.Name)
+            @Html.DisplayFor(model => model.Name)
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Supplier.Name)
+            @Html.DisplayNameFor(model => model.Contacts)
         </dt>
+
         <dd>
-            @Html.DisplayFor(model => model.Supplier.Name)
+            @Html.DisplayFor(model => model.Contacts)
         </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Price)
-        </dd>
     </dl>
 </div>
 <p>
