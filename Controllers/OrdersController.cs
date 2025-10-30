@@ -46,6 +46,15 @@ namespace ProcurementSystem.Controllers
         public ActionResult Create()
         {
             ViewBag.UserId = new SelectList(db.Users, "Id", "Login");
+
+            // Подготовим список статусов заказа
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(OrderStatus))
+                    .Cast<OrderStatus>()
+                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name");
+
             return View();
         }
 
@@ -61,7 +70,16 @@ namespace ProcurementSystem.Controllers
                 return RedirectToAction("Index");
             }
 
+            // При ошибке повторно подготовим select-листы
             ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(OrderStatus))
+                    .Cast<OrderStatus>()
+                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)order.Status);
+
             return View(order);
         }
 
@@ -78,6 +96,11 @@ namespace ProcurementSystem.Controllers
                 return HttpNotFound();
             }
             ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)order.Status);
             return View(order);
         }
 
@@ -93,6 +116,11 @@ namespace ProcurementSystem.Controllers
                 return RedirectToAction("Index");
             }
             ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)order.Status);
             return View(order);
         }
 
