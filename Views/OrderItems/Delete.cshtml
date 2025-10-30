@@ -1,0 +1,52 @@
+﻿@model ProcurementSystem.Models.OrderItem
+
+@{
+    ViewBag.Title = "Видалення позиції";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3 class="text-danger">Ви впевнені, що хочете видалити це?</h3>
+<div>
+    <h4>Позиція Замовлення</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            Замовлення
+        </dt>
+        <dd>
+            № @Html.DisplayFor(model => model.Order.Id) (від @Html.DisplayFor(model => model.Order.User.Login))
+        </dd>
+
+        <dt>
+            Пропозиція
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Offer.Product.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Quantity)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Quantity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Amount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Amount)
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color" style="margin-top: 15px;">
+            <input type="submit" value="Видалити" class="btn btn-danger" /> |
+            @Html.ActionLink("Назад до списку", "Index")
+        </div>
+    }
+</div>

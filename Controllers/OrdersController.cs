@@ -1,10 +1,13 @@
-﻿using ProcurementSystem.Data;
-using ProcurementSystem.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
 using System.Linq;
-using System.Web.Mvc;
-using System.Data.Entity; // Додайте це
-using ProcurementSystem.Models.Enums;
 using System.Net;
+using System.Web;
+using System.Web.Mvc;
+using ProcurementSystem;
+using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
@@ -15,7 +18,6 @@ namespace ProcurementSystem.Controllers
         // GET: Orders
         public ActionResult Index()
         {
-            // .Include() тут вже був, це добре
             var orders = db.Orders.Include(o => o.User);
             return View(orders.ToList());
         }
@@ -27,12 +29,12 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-
-            // --- ВИПРАВЛЕНО ---
+            // Завантажуємо Замовлення разом з Користувачем, Позиціями та Рахунками
             Order order = db.Orders
                             .Include(o => o.User)
+                            .Include(o => o.OrderItems.Select(oi => oi.Offer.Product))
+                            .Include(o => o.Invoices)
                             .FirstOrDefault(o => o.Id == id);
-
             if (order == null)
             {
                 return HttpNotFound();
@@ -50,13 +52,8 @@ namespace ProcurementSystem.Controllers
         // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Order order)
+        public ActionResult Create([Bind(Include = "Id,OrderDate,Status,TotalAmount,UserId")] Order order)
         {
-            order.UserId = 1;
-            order.TotalAmount = 0;
-            ModelState.Remove("UserId");
-            ModelState.Remove("TotalAmount");
-
             if (ModelState.IsValid)
             {
                 db.Orders.Add(order);
@@ -75,7 +72,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Order order = db.Orders.Find(id); // Find() тут ОК для форми
+            Order order = db.Orders.Find(id);
             if (order == null)
             {
                 return HttpNotFound();
@@ -106,12 +103,8 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-
-            // --- ВИПРАВЛЕНО ---
-            Order order = db.Orders
-                            .Include(o => o.User)
-                            .FirstOrDefault(o => o.Id == id);
-
+            // Завантажуємо разом з Користувачем для відображення
+            Order order = db.Orders.Include(o => o.User).FirstOrDefault(o => o.Id == id);
             if (order == null)
             {
                 return HttpNotFound();
@@ -124,7 +117,24 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
+            bool hasOrderItems = db.OrderItems.Any(oi => oi.OrderId == id);
+            bool hasInvoices = db.Invoices.Any(i => i.OrderId == id);
+            bool hasReportOrders = db.ReportOrders.Any(ro => ro.OrderId == id);
+
             Order order = db.Orders.Find(id);
+
+            if (hasOrderItems || hasInvoices || hasReportOrders)
+            {
+                string errorMessage = "Неможливо видалити замовлення. ";
+                if (hasOrderItems) errorMessage += "Існують пов'язані позиції. ";
+                if (hasInvoices) errorMessage += "Існують пов'язані рахунки. ";
+                if (hasReportOrders) errorMessage += "Існують пов'язані звіти.";
+
+                ModelState.AddModelError("", errorMessage);
+                db.Entry(order).Reference(o => o.User).Load();
+                return View(order);
+            }
+
             db.Orders.Remove(order);
             db.SaveChanges();
             return RedirectToAction("Index");

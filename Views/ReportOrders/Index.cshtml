@@ -1,24 +1,24 @@
-﻿@model IEnumerable<ProcurementSystem.Models.SupplierOffer>
+﻿@model IEnumerable<ProcurementSystem.Models.ReportOrder>
 
 @{
-    ViewBag.Title = "Пропозиції Постачальників";
+    ViewBag.Title = "Зв'язки Звіт-Замовлення";
 }
 
 <h2>@ViewBag.Title</h2>
 
 <p>
-    @Html.ActionLink("Створити Нову", "Create")
+    @Html.ActionLink("Створити Новий Зв'язок", "Create", null, new { @class = "btn btn-primary" })
 </p>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Product.Name)
+            @Html.DisplayNameFor(model => model.Report.Type)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Supplier.Name)
+            Замовлення
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Price)
+            @Html.DisplayNameFor(model => model.GenerationDate)
         </th>
         <th></th>
     </tr>
@@ -27,13 +27,13 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Product.Name)
+                @Html.DisplayFor(modelItem => item.Report.Type)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Supplier.Name)
+                № @Html.DisplayFor(modelItem => item.Order.Id) (від @Html.DisplayFor(modelItem => item.Order.User.Login))
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Price)
+                @item.GenerationDate.ToShortDateString()
             </td>
             <td>
                 @Html.ActionLink("Редагувати", "Edit", new { id = item.Id }) |

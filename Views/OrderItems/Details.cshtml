@@ -1,0 +1,52 @@
+﻿@model ProcurementSystem.Models.OrderItem
+
+@{
+    ViewBag.Title = "Деталі позиції";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <h4>Позиція Замовлення</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            Замовлення
+        </dt>
+        <dd>
+            № @Html.DisplayFor(model => model.Order.Id) (від @Html.DisplayFor(model => model.Order.User.Login))
+        </dd>
+
+        <dt>
+            Пропозиція
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Offer.Product.Name) (від @Html.DisplayFor(model => model.Offer.Supplier.Name))
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Quantity)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Quantity)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UnitPrice)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.UnitPrice)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Amount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Amount)
+        </dd>
+    </dl>
+</div>
+<p style="margin-top: 15px;">
+    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" }) |
+    @Html.ActionLink("Назад до списку", "Index")
+</p>

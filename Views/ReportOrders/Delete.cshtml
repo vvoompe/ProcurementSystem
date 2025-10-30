@@ -1,0 +1,45 @@
+﻿@model ProcurementSystem.Models.ReportOrder
+
+@{
+    ViewBag.Title = "Видалення Зв'язку";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3 class="text-danger">Ви впевнені, що хочете видалити цей зв'язок?</h3>
+<div>
+    <h4>Зв'язок</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Report.Type)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Report.Type)
+        </dd>
+
+        <dt>
+            Замовлення
+        </dt>
+        <dd>
+            № @Html.DisplayFor(model => model.Order.Id)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GenerationDate)
+        </dt>
+        <dd>
+            @Model.GenerationDate.ToShortDateString()
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color" style="margin-top: 15px;">
+            <input type="submit" value="Видалити" class="btn btn-danger" /> |
+            @Html.ActionLink("Назад до списку", "Index")
+        </div>
+    }
+</div>

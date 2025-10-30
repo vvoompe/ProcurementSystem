@@ -1,0 +1,95 @@
+﻿@model ProcurementSystem.Models.Order
+
+@{
+    ViewBag.Title = "Деталі Замовлення";
+}
+
+<h2>@ViewBag.Title №@Model.Id</h2>
+
+<div>
+    <h4>Замовлення</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.User.Login)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.Login)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
+        <dd>
+            @Model.OrderDate.ToShortDateString()
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalAmount)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.TotalAmount)
+        </dd>
+    </dl>
+
+    <h4>Позиції в замовленні</h4>
+    @if (Model.OrderItems.Any())
+    {
+        <table class="table table-striped table-sm">
+            <tr>
+                <th>Товар</th>
+                <th>К-сть</th>
+                <th>Ціна за од.</th>
+                <th>Сума</th>
+            </tr>
+            @foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Offer.Product.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
+                    <td>@Html.DisplayFor(modelItem => item.UnitPrice)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Amount)</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <p>Немає позицій у цьому замовленні.</p>
+    }
+
+    <h4>Рахунки по замовленню</h4>
+    @if (Model.Invoices.Any())
+    {
+        <table class="table table-striped table-sm">
+            <tr>
+                <th>Дата Рахунку</th>
+                <th>Сума</th>
+                <th>Статус</th>
+            </tr>
+            @foreach (var invoice in Model.Invoices)
+            {
+                <tr>
+                    <td>@invoice.InvoiceDate.ToShortDateString()</td>
+                    <td>@Html.DisplayFor(modelItem => invoice.Amount)</td>
+                    <td>@Html.DisplayFor(modelItem => invoice.Status)</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <p>Немає рахунків по цьому замовленню.</p>
+    }
+</div>
+<p style="margin-top: 20px;">
+    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" }) |
+    @Html.ActionLink("Назад до списку", "Index", null, new { @class = "btn btn-default" })
+</p>

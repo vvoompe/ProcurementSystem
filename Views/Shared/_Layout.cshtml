@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - додаток ASP.NET</title>
@@ -18,8 +18,16 @@
             </button>
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Головна", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Карта сайту", "Create", "Categories", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Товари", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Категорії", "Index", "Categories", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Постачальники", "Index", "Suppliers", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Пропозиції (Offers)", "Index", "SupplierOffers", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Замовлення (Orders)", "Index", "Orders", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Позиції (Items)", "Index", "OrderItems", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Рахунки (Invoices)", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Звіти (Reports)", "Index", "Reports", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Зв'язки (ReportOrders)", "Index", "ReportOrders", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Користувачі", "Index", "Users", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
             </div>
         </div>

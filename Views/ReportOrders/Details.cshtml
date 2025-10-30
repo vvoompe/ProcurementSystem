@@ -1,0 +1,39 @@
+﻿@model ProcurementSystem.Models.ReportOrder
+
+@{
+    ViewBag.Title = "Деталі Зв'язку";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <h4>Зв'язок</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Report.Type)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Report.Type) (за @Html.DisplayFor(model => model.Report.Period))
+        </dd>
+
+        <dt>
+            Замовлення
+        </dt>
+        <dd>
+            № @Html.DisplayFor(model => model.Order.Id) (від @Html.DisplayFor(model => model.Order.User.Login))
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GenerationDate)
+        </dt>
+        <dd>
+            @Model.GenerationDate.ToShortDateString()
+        </dd>
+
+    </dl>
+</div>
+<p style="margin-top: 15px;">
+    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" }) |
+    @Html.ActionLink("Назад до списку", "Index")
+</p>

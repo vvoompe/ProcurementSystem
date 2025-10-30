@@ -1,0 +1,59 @@
+﻿@model ProcurementSystem.Models.Report
+
+@{
+    ViewBag.Title = "Деталі Звіту";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <h4>@Model.Type (за @Model.Period)</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Period)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Period)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Type)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Type)
+        </dd>
+    </dl>
+
+    <h4 style="margin-top: 20px;">Замовлення у звіті</h4>
+    @if (Model.ReportOrders.Any())
+    {
+        <table class="table table-striped table-sm">
+            <tr>
+                <th>ID Замовлення</th>
+                <th>Дата Замовлення</th>
+                <th>Сума</th>
+                <th>Користувач</th>
+                <th>Дата додавання у звіт</th>
+            </tr>
+            @foreach (var ro in Model.ReportOrders)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => ro.Order.Id)</td>
+                    <td>@ro.Order.OrderDate.ToShortDateString()</td>
+                    <td>@Html.DisplayFor(modelItem => ro.Order.TotalAmount)</td>
+                    <td>@Html.DisplayFor(modelItem => ro.Order.User.Login)</td>
+                    <td>@ro.GenerationDate.ToShortDateString()</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <p>Немає замовлень, включених у цей звіт.</p>
+    }
+</div>
+<p style="margin-top: 20px;">
+    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" }) |
+    @Html.ActionLink("Назад до списку", "Index")
+</p>
