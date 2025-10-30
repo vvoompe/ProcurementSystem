@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
+using System.Data.Entity; // Додайте це для .Include()
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -18,6 +18,7 @@ namespace ProcurementSystem.Controllers
         // GET: Products
         public ActionResult Index()
         {
+            // .Include() тут вже був, це добре
             var products = db.Products.Include(p => p.Category);
             return View(products.ToList());
         }
@@ -29,7 +30,14 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+
+            // --- ВИПРАВЛЕНО ---
+            // Замінюємо Find() на FirstOrDefault() з .Include(),
+            // щоб завантажити дані про категорію
+            Product product = db.Products
+                                .Include(p => p.Category)
+                                .FirstOrDefault(p => p.Id == id);
+
             if (product == null)
             {
                 return HttpNotFound();
@@ -45,8 +53,6 @@ namespace ProcurementSystem.Controllers
         }
 
         // POST: Products/Create
-        // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
-        // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,Name,Description,Price,Stock,CategoryId")] Product product)
@@ -69,6 +75,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            // Find() тут залишаємо, оскільки нам не потрібні пов'язані дані для форми
             Product product = db.Products.Find(id);
             if (product == null)
             {
@@ -79,8 +86,6 @@ namespace ProcurementSystem.Controllers
         }
 
         // POST: Products/Edit/5
-        // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
-        // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Name,Description,Price,Stock,CategoryId")] Product product)
@@ -102,7 +107,13 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Products.Find(id);
+
+            // --- ВИПРАВЛЕНО ---
+            // Також замінюємо Find() на версію з .Include()
+            Product product = db.Products
+                                .Include(p => p.Category)
+                                .FirstOrDefault(p => p.Id == id);
+
             if (product == null)
             {
                 return HttpNotFound();

@@ -38,7 +38,7 @@ namespace ProcurementSystem.Data
             context.Suppliers.Add(supplier1);
             context.Suppliers.Add(supplier2);
 
-            context.SaveChanges();
+            // context.SaveChanges(); // --- ВИДАЛЕНО ЗВІДСИ ---
 
             var order1 = new Order
             {
@@ -56,6 +56,11 @@ namespace ProcurementSystem.Data
             };
             context.Orders.Add(order1);
             context.Orders.Add(order2);
+
+            // --- ПЕРЕМІЩЕНО СЮДИ ---
+            // Зберігаємо всі зміни (користувачів, категорії, товари, постачальників, замовлення)
+            // ОДНИМ запитом в кінці.
+            context.SaveChanges();
 
             base.Seed(context);
         }

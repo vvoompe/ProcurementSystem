@@ -11,7 +11,7 @@
 <body>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
         <div class="container">
-            @Html.ActionLink("ProcurementSystem", "Index", "Products", new { area = "" }, new { @class = "navbar-brand" })
+            @Html.ActionLink("АСВЗ", "Index", "Products", new { area = "" }, new { @class = "navbar-brand" })
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Переключить навигацию" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -19,8 +19,6 @@
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
                     <li>@Html.ActionLink("Головна", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Інфо", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Контакти", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
                     <li>@Html.ActionLink("Карта сайту", "Create", "Categories", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
             </div>
@@ -30,7 +28,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - Автоматизація системи закупівель</p>
+            <p>&copy; @DateTime.Now.Year - Автоматизація системи відділу закупівель</p>
         </footer>
     </div>
 

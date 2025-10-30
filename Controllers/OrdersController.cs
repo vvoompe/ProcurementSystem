@@ -1,10 +1,10 @@
-﻿using ProcurementSystem.Data; 
-using ProcurementSystem.Models; 
+﻿using ProcurementSystem.Data;
+using ProcurementSystem.Models;
 using System.Linq;
 using System.Web.Mvc;
-using System.Data.Entity;
-using ProcurementSystem.Models.Enums;   
-using System.Net; // Добавлено для HttpStatusCode
+using System.Data.Entity; // Додайте це
+using ProcurementSystem.Models.Enums;
+using System.Net;
 
 namespace ProcurementSystem.Controllers
 {
@@ -15,7 +15,7 @@ namespace ProcurementSystem.Controllers
         // GET: Orders
         public ActionResult Index()
         {
-            // Переконайтесь, що ви завантажуєте User, щоб уникнути помилки в View
+            // .Include() тут вже був, це добре
             var orders = db.Orders.Include(o => o.User);
             return View(orders.ToList());
         }
@@ -27,7 +27,12 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Order order = db.Orders.Find(id);
+
+            // --- ВИПРАВЛЕНО ---
+            Order order = db.Orders
+                            .Include(o => o.User)
+                            .FirstOrDefault(o => o.Id == id);
+
             if (order == null)
             {
                 return HttpNotFound();
@@ -38,8 +43,7 @@ namespace ProcurementSystem.Controllers
         // GET: Orders/Create
         public ActionResult Create()
         {
-            // Передаємо список користувачів для випадаючого списку у View, якщо він потрібен
-            ViewBag.UserId = new SelectList(db.Users, "Id", "Login"); // Используем "Login"
+            ViewBag.UserId = new SelectList(db.Users, "Id", "Login");
             return View();
         }
 
@@ -48,11 +52,8 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(Order order)
         {
-            // Встановлюємо значення за замовчуванням
-            order.UserId = 1; // Замініть на логіку отримання ID поточного користувача
+            order.UserId = 1;
             order.TotalAmount = 0;
-
-            // Видаляємо ці поля з перевірки ModelState
             ModelState.Remove("UserId");
             ModelState.Remove("TotalAmount");
 
@@ -63,8 +64,7 @@ namespace ProcurementSystem.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Якщо ModelState не валідний, повертаємо форму з помилками
-            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId); // Используем "Login"
+            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
             return View(order);
         }
 
@@ -75,12 +75,12 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Order order = db.Orders.Find(id);
+            Order order = db.Orders.Find(id); // Find() тут ОК для форми
             if (order == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId); // Используем "Login"
+            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
             return View(order);
         }
 
@@ -95,7 +95,7 @@ namespace ProcurementSystem.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId); // Используем "Login"
+            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
             return View(order);
         }
 
@@ -106,7 +106,12 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Order order = db.Orders.Find(id);
+
+            // --- ВИПРАВЛЕНО ---
+            Order order = db.Orders
+                            .Include(o => o.User)
+                            .FirstOrDefault(o => o.Id == id);
+
             if (order == null)
             {
                 return HttpNotFound();
