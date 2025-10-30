@@ -11,6 +11,7 @@ namespace ProcurementSystem.Models.Enums
         ВІДПРАВЛЕНО,
         ПІДТВЕРДЖЕНО,
         ЗАКРИТО,
-        СКАСОВАНО
+        СКАСОВАНО,
+        ДОСТАВЛЕНО
     }
 }

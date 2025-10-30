@@ -1,0 +1,79 @@
+﻿@* Підключаємо наші моделі, щоб View їх "розумів" *@
+@using ProcurementSystem.Models
+@using ProcurementSystem.ViewModels
+
+@{
+    ViewBag.Title = "Тестові LINQ Запити";
+
+    // Розпаковуємо дані з ViewBag
+    var expensiveProducts = ViewBag.ExpensiveProducts as List<Product>;
+    var laptops = ViewBag.Laptops as List<Product>;
+    var totalOrdersSum = (decimal)ViewBag.TotalOrdersSum;
+    var productsPerCategory = ViewBag.ProductsPerCategory as List<CategoryProductCountViewModel>;
+    var suppliersWithNoOffers = ViewBag.SuppliersWithNoOffers as List<Supplier>;
+}
+
+<h2>@ViewBag.Title</h2>
+<p>
+    Ця сторінка демонструє виконання 5 LINQ запитів згідно Лабораторної №3.
+</p>
+
+<hr />
+<h4>1. (Фільтрація) Товари, дорожчі за 50 000 грн:</h4>
+<table class="table table-striped">
+    <tr> <th>Назва</th> <th>Категорія</th> <th>Ціна</th> </tr>
+    @foreach (var item in expensiveProducts)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Category.Name</td>
+            <td>@item.Price.ToString("C")</td>
+        </tr>
+    }
+</table>
+
+<hr />
+<h4>2. (Фільтрація) Всі товари з категорії "Ноутбуки":</h4>
+<table class="table table-striped">
+    <tr> <th>Назва</th> <th>Категорія</th> <th>Ціна</th> </tr>
+    @foreach (var item in laptops)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Category.Name</td>
+            <td>@item.Price.ToString("C")</td>
+        </tr>
+    }
+</table>
+
+<hr />
+<h4>3. (Узагальнення - Sum) Загальна сума всіх замовлень:</h4>
+<div class="alert alert-info">
+    <strong>@totalOrdersSum.ToString("C")</strong>
+</div>
+
+<hr />
+<h4>4. (Узагальнення - GroupBy/Count) Кількість товарів по категоріях:</h4>
+<table class="table table-striped">
+    <tr> <th>Категорія</th> <th>Кількість товарів</th> </tr>
+    @foreach (var item in productsPerCategory)
+    {
+        <tr>
+            <td>@item.CategoryName</td>
+            <td>@item.ProductCount</td>
+        </tr>
+    }
+</table>
+
+<hr />
+<h4>5. (Фільтрація - Any) Постачальники без пропозицій:</h4>
+<table class="table table-striped">
+    <tr> <th>Назва</th> <th>Контактна інфо</th> </tr>
+    @foreach (var item in suppliersWithNoOffers)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.ContactInfo</td>
+        </tr>
+    }
+</table>
