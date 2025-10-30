@@ -18,6 +18,7 @@
         <dd>@(Model.Price.ToString("C"))</dd>
 
         <dt>Категорія</dt>
+
         <dd>@(Model.Category?.Name ?? "—")</dd>
     </dl>
 </div>
@@ -26,7 +27,10 @@
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.Id)
-    <input type="submit" value="Delete" class="btn btn-danger" />
- |
-@Html.ActionLink("Back to List", "Index")
+
+
+    <div class="form-actions no-color" style="margin-top: 15px;">
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        @Html.ActionLink("Back to List", "Index")
+    </div>
 }

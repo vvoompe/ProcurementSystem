@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity; // Додайте це для .Include()
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem.Data;
+using ProcurementSystem;
 using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
@@ -18,7 +18,6 @@ namespace ProcurementSystem.Controllers
         // GET: Products
         public ActionResult Index()
         {
-            // .Include() тут вже був, це добре
             var products = db.Products.Include(p => p.Category);
             return View(products.ToList());
         }
@@ -31,9 +30,6 @@ namespace ProcurementSystem.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            // --- ВИПРАВЛЕНО ---
-            // Замінюємо Find() на FirstOrDefault() з .Include(),
-            // щоб завантажити дані про категорію
             Product product = db.Products
                                 .Include(p => p.Category)
                                 .FirstOrDefault(p => p.Id == id);
@@ -75,7 +71,6 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            // Find() тут залишаємо, оскільки нам не потрібні пов'язані дані для форми
             Product product = db.Products.Find(id);
             if (product == null)
             {
@@ -108,11 +103,13 @@ namespace ProcurementSystem.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            // --- ВИПРАВЛЕНО ---
-            // Також замінюємо Find() на версію з .Include()
+            // ===== ВИПРАВЛЕННЯ ТУТ =====
+            // Ми замінюємо Find(id) на запит з .Include(), 
+            // щоб явно завантажити пов'язані дані про Категорію
             Product product = db.Products
-                                .Include(p => p.Category)
+                                .Include(p => p.Category) // <-- Цей рядок завантажить Категорію
                                 .FirstOrDefault(p => p.Id == id);
+            // ===========================
 
             if (product == null)
             {

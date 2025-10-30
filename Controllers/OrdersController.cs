@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ProcurementSystem;
+using ProcurementSystem.Models;
+using ProcurementSystem.Models.Enums;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -6,8 +9,6 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem;
-using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
