@@ -6,7 +6,7 @@ using System.Data.Entity;
 
 namespace ProcurementSystem.Data
 {
-    public class DbInitializer : DropCreateDatabaseIfModelChanges<ProcUREMENTContext>
+    public class DbInitializer : DropCreateDatabaseIfModelChanges<ProcurementContext>
     {
         protected override void Seed(ProcurementContext context)
         {

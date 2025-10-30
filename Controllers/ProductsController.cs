@@ -49,7 +49,7 @@ namespace ProcurementSystem.Controllers
         // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Description,CategoryId")] Product product)
+        public ActionResult Create([Bind(Include = "Id,Name,Description,Price,Stock,CategoryId")] Product product)
         {
             if (ModelState.IsValid)
             {
@@ -83,7 +83,7 @@ namespace ProcurementSystem.Controllers
         // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Description,CategoryId")] Product product)
+        public ActionResult Edit([Bind(Include = "Id,Name,Description,Price,Stock,CategoryId")] Product product)
         {
             if (ModelState.IsValid)
             {

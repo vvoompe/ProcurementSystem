@@ -1,4 +1,5 @@
-﻿using ProcurementSystem.Models;
+﻿using ProcurementSystem.Data; // Добавлено: содержит ProcurementContext
+using ProcurementSystem.Models;
 using ProcurementSystem.ViewModels;
 using System.Linq;
 using System.Web.Mvc;
@@ -33,7 +34,7 @@ namespace ProcurementSystem.Controllers
                 .ToList();
 
             var suppliersWithNoOffers = db.Suppliers
-                .Where(s => !s.SupplierOffers.Any())
+                .Where(s => !s.Offers.Any())
                 .ToList();
 
             ViewBag.ExpensiveProducts = expensiveProducts;
