@@ -1,102 +1,142 @@
-﻿@model IEnumerable<ProcurementSystem.Models.Product>
-@using ProcurementSystem.ViewModels
+﻿@{
+    ViewBag.Title = "LINQ Запити";
 
-@{
-    ViewBag.Title = "Демонстрація LINQ запитів";
-
-    var expensiveProducts = ViewBag.ExpensiveProducts as List<ProcurementSystem.Models.Product> ?? new List<ProcurementSystem.Models.Product>();
-    var laptops = ViewBag.Laptops as List<ProcurementSystem.Models.Product> ?? new List<ProcurementSystem.Models.Product>();
-    var productsPerCategory = ViewBag.ProductsPerCategory as List<CategoryProductCountViewModel> ?? new List<CategoryProductCountViewModel>();
-    var suppliersWithNoOffers = ViewBag.SuppliersWithNoOffers as List<ProcurementSystem.Models.Supplier> ?? new List<ProcurementSystem.Models.Supplier>();
+    var expensiveProducts = ViewBag.ExpensiveProducts as List<ProcurementSystem.Models.Product>;
+    var laptops = ViewBag.Laptops as List<ProcurementSystem.Models.Product>;
+    var totalSum = (decimal)ViewBag.TotalOrdersSum;
+    var productsPerCategory = ViewBag.ProductsPerCategory as List<ProcurementSystem.ViewModels.CategoryProductCountViewModel>;
+    var suppliersWithNoOffers = ViewBag.SuppliersWithNoOffers as List<ProcurementSystem.Models.Supplier>;
 }
 
 <h2>@ViewBag.Title</h2>
+<p>Результати нових LINQ запитів.</p>
 <hr />
 
-<h4>Демонстрація CUD (Add/Update/Delete)</h4>
-<div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; background-color: #f9f9f9;">
-    @if (ViewBag.CreateMessage != null)
-    {
-        <p style="color: green;"><strong>Додавання:</strong> @ViewBag.CreateMessage</p>
-    }
-    @if (ViewBag.UpdateMessage != null)
-    {
-        <p style="color: blue;"><strong>Оновлення:</strong> @ViewBag.UpdateMessage</p>
-    }
-    @if (ViewBag.DeleteMessage != null)
-    {
-        <p style="color: red;"><strong>Видалення:</strong> @ViewBag.DeleteMessage</p>
-    }
-</div>
-<h4>Запит 1: (Фільтрація) Товари, дорожчі за 50 000 грн</h4>
-<table class="table table-bordered table-striped">
-    <tr>
-        <th>Назва</th>
-        <th>Ціна</th>
-        <th>Категорія</th>
-    </tr>
-    @foreach (var item in expensiveProducts)
-    {
+@if (TempData["UserSuccess"] != null)
+{
+    <div class="alert alert-success">@TempData["UserSuccess"]</div>
+}
+@if (TempData["UserError"] != null)
+{
+    <div class="alert alert-danger">@TempData["UserError"]</div>
+}
+<h3>1. Товари дорожче 50 000 (з `ViewBag.ExpensiveProducts`)</h3>
+@if (expensiveProducts != null && expensiveProducts.Any())
+{
+    <table class="table table-sm table-striped">
         <tr>
-            <td>@item.Name</td>
-            <td>@item.Price.ToString("C")</td>
-            <td>@(item.Category != null ? item.Category.Name : "N/A")</td>
+            <th>Назва</th>
+            <th>Ціна</th>
+            <th>Категорія</th>
         </tr>
-    }
-</table>
+        @foreach (var item in expensiveProducts)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Price.ToString("C")</td>
+                <td>@item.Category.Name</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <p>Немає товарів дорожче 50 000.</p>
+}
 <hr />
 
-<h4>Запит 2: (Фільтрація) Всі товари з категорії "Ноутбуки"</h4>
-<table class="table table-bordered table-striped">
-    <tr>
-        <th>Назва</th>
-        <th>Ціна</th>
-        <th>Категорія</th>
-    </tr>
-    @foreach (var item in laptops)
-    {
+<h3>2. Всі товари з категорією "Ноутбуки" (з `ViewBag.Laptops`)</h3>
+@if (laptops != null && laptops.Any())
+{
+    <table class="table table-sm table-striped">
         <tr>
-            <td>@item.Name</td>
-            <td>@item.Price.ToString("C")</td>
-            <td>@(item.Category != null ? item.Category.Name : "N/A")</td>
+            <th>Назва</th>
+            <th>Ціна</th>
+            <th>Категорія</th>
         </tr>
-    }
-</table>
+        @foreach (var item in laptops)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Price.ToString("C")</td>
+                <td>@item.Category.Name</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <p>Немає товарів у категорії "Ноутбуки".</p>
+}
 <hr />
 
-<h4>Запит 3: (Узагальнення - Sum) Загальна сума всіх замовлень</h4>
-<div class="alert alert-info">
-    <strong>Загальна сума:</strong> @(((decimal?)ViewBag.TotalOrdersSum ?? 0.0m).ToString("C"))
-</div>
+<h3>3. Загальна сума всіх замовлень (з `ViewBag.TotalOrdersSum`)</h3>
+<h4>@totalSum.ToString("C")</h4>
 <hr />
 
-<h4>Запит 4: (Узагальнення - GroupBy/Count) Кількість товарів по категоріях</h4>
-<table class="table table-bordered table-striped">
-    <tr>
-        <th>Категорія</th>
-        <th>Кількість товарів</th>
-    </tr>
-    @foreach (var item in productsPerCategory)
-    {
+<h3>4. Кількість товарів по категоріях (з `ViewBag.ProductsPerCategory`)</h3>
+@if (productsPerCategory != null && productsPerCategory.Any())
+{
+    <table class="table table-sm table-striped">
         <tr>
-            <td>@item.CategoryName</td>
-            <td>@item.ProductCount</td>
+            <th>Категорія</th>
+            <th>Кількість товарів</th>
         </tr>
-    }
-</table>
+        @foreach (var item in productsPerCategory)
+        {
+            <tr>
+                <td>@item.CategoryName</td>
+                <td>@item.ProductCount</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <p>Немає даних по категоріях.</p>
+}
 <hr />
 
-<h4>Запит 5: (Фільтрація - Any) Постачальники без пропозицій</h4>
-<table class="table table-bordered table-striped">
-    <tr>
-        <th>Назва постачальника</th>
-        <th>Контакти</th>
-    </tr>
-    @foreach (var item in suppliersWithNoOffers)
-    {
+<h3>5. Постачальники без пропозицій (з `ViewBag.SuppliersWithNoOffers`)</h3>
+@if (suppliersWithNoOffers != null && suppliersWithNoOffers.Any())
+{
+    <table class="table table-sm table-striped">
         <tr>
-            <td>@item.Name</td>
-            <td>@item.Contacts</td>
+            <th>Назва Постачальника</th>
+            <th>Контакти</th>
         </tr>
-    }
-</table>
+        @foreach (var item in suppliersWithNoOffers)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Contacts</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <p>Всі постачальники мають пропозиції.</p>
+}
+<hr />
+
+<h3>6. Додати нового користувача (Вимога CUD)</h3>
+<p>Ця форма демонструє доповнення запису у таблицю <code>User</code> (Приклад №2 з методички).</p>
+
+
+@using (Html.BeginForm("AddUser", "LinqQuery", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group mb-2" style="max-width: 400px;">
+        <label for="login" class="form-label">Логін:</label>
+        <input type="text" name="login" class="form-control" />
+    </div>
+
+    <div class="form-group mb-2" style="max-width: 400px;">
+        <label for="password" class="form-label">Пароль:</label>
+        <input type="password" name="password" class="form-control" />
+    </div>
+
+    <input type="submit" value="Додати користувача" class="btn btn-primary" />
+}
