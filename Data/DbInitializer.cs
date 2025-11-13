@@ -13,6 +13,7 @@ namespace ProcurementSystem.Data
             // 1. Користувачі
             var user1 = new User { Login = "admin_user", Password = "password", Role = UserRole.АДМІНІСТРАТОР };
             var user2 = new User { Login = "manager_user", Password = "password", Role = UserRole.МЕНЕДЖЕР };
+
             context.Users.Add(user1);
             context.Users.Add(user2);
 

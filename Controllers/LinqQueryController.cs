@@ -20,25 +20,25 @@ namespace ProcurementSystem.Controllers
         // GET: LinqQuery
         public ActionResult Index()
         {
-            // Query 1: Товары дороже 50 000
+            // Query 1: >50000
             var expensiveProducts = db.Products
                 .Include(p => p.Category)
                 .Where(p => p.Price > 50000m)
                 .ToList();
             ViewBag.ExpensiveProducts = expensiveProducts;
 
-            // Query 2: Все товары с категорией "Ноутбуки"
+            // Query 2: "Ноутбуки"
             var laptops = db.Products
                 .Include(p => p.Category)
                 .Where(p => p.Category.Name == "Ноутбуки")
                 .ToList();
             ViewBag.Laptops = laptops;
 
-            // Query 3: Общая сумма всех заказов
+            // Query 3: Sum
             var totalSum = db.Orders.Select(o => (decimal?)o.TotalAmount).Sum() ?? 0m;
             ViewBag.TotalOrdersSum = totalSum;
 
-            // Query 4: Количество товаров по категориям (ViewModel)
+            // Query 4: items per category
             var productsPerCategory = db.Categories
                 .Select(c => new CategoryProductCountViewModel
                 {
@@ -94,7 +94,7 @@ namespace ProcurementSystem.Controllers
                 TempData["UserError"] = "Помилка при додаванні користувача: " + ex.Message;
             }
 
-            // Повертаємо користувача назад на сторінку LinqQuery
+            
             return RedirectToAction("Index");
         }
     }
