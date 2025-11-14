@@ -4,49 +4,50 @@
     ViewBag.Title = "Видалення Рахунку";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Видалення Рахунку</h2>
 
-<h3 class="text-danger">Ви впевнені, що хочете видалити це?</h3>
+<h3>Ви впевнені, що хочете видалити цей рахунок?</h3>
 <div>
-    <h4>Рахунок</h4>
+    <h4>Рахунок #@Model.Id</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            Замовлення
+            Замовлення #
         </dt>
         <dd>
-            № @Html.DisplayFor(model => model.Order.Id) (від @Html.DisplayFor(model => model.Order.User.Login))
+            @Html.DisplayFor(model => model.OrderId)
+        </dd>
+
+        <dt>
+            Користувач
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Order.User.Login)
         </dd>
 
         <dt>
             @Html.DisplayNameFor(model => model.Amount)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Amount)
+            @Model.Amount.ToString("C")
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.InvoiceDate)
+            Статус оплати
         </dt>
         <dd>
-            @Model.InvoiceDate.ToShortDateString()
+            @Html.DisplayFor(model => model.PaymentStatus)
         </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Status)
-        </dd>
     </dl>
 
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
 
-        <div class="form-actions no-color" style="margin-top: 15px;">
+        <div class="form-actions no-color">
             <input type="submit" value="Видалити" class="btn btn-danger" /> |
-            @Html.ActionLink("Назад до списку", "Index")
+            @Html.ActionLink("Повернутися до Списку", "Index")
         </div>
     }
 </div>

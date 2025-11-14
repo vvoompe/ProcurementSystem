@@ -20,7 +20,6 @@ namespace ProcurementSystem.ViewModels
         [Display(Name = "Кількість")]
         public int Quantity { get; set; }
 
-        // Цей список буде заповнюватися в контролері
         public SelectList OfferList { get; set; }
     }
 }

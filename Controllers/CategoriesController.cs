@@ -11,7 +11,6 @@ using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
-    // 1. Додано: Захист всього контролера
     [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class CategoriesController : Controller
     {
@@ -108,19 +107,15 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            // --- ДОДАНО ПРАВИЛО БЕЗПЕКИ ---
-            // 2. Перевіряємо, чи є у категорії пов'язані товари
             bool hasProducts = db.Products.Any(p => p.CategoryId == id);
 
-            Category category = db.Categories.Find(id); // Знаходимо категорію
+            Category category = db.Categories.Find(id);
 
             if (hasProducts)
             {
-                // Якщо так - блокуємо видалення
                 ModelState.AddModelError("", "Неможливо видалити категорію, оскільки вона містить товари.");
-                return View(category); // Повертаємо View з помилкою
+                return View(category);
             }
-            // --- КІНЕЦЬ ПРАВИЛА БЕЗПЕКИ ---
 
             db.Categories.Remove(category);
             db.SaveChanges();

@@ -8,12 +8,11 @@ using System.Web;
 using System.Web.Mvc;
 using ProcurementSystem;
 using ProcurementSystem.Models;
-using ProcurementSystem.Models.Enums; // Додано для доступу до PaymentStatus
+using ProcurementSystem.Models.Enums;
 
 namespace ProcurementSystem.Controllers
 {
-    // 1. Додано: Захист всього контролера
-    [Authorize(Roles = "БУХГАЛТЕР, МЕНЕДЖЕР, АДМІНІСТРАТОР")]
+    [Authorize(Roles = "БУХГАЛТЕР, АДМІНІСТРАТОР")]
     public class InvoicesController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
@@ -21,8 +20,7 @@ namespace ProcurementSystem.Controllers
         // GET: Invoices
         public ActionResult Index()
         {
-            // Включаємо пов'язані дані 'Order' для відображення в таблиці
-            var invoices = db.Invoices.Include(i => i.Order);
+            var invoices = db.Invoices.Include(i => i.Order.User);
             return View(invoices.ToList());
         }
 
@@ -33,10 +31,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            // Включаємо дані про Замовлення та Користувача
-            Invoice invoice = db.Invoices
-                                .Include(i => i.Order.User)
-                                .FirstOrDefault(i => i.Id == id);
+            Invoice invoice = db.Invoices.Include(i => i.Order.User).FirstOrDefault(i => i.Id == id);
             if (invoice == null)
             {
                 return HttpNotFound();
@@ -44,68 +39,38 @@ namespace ProcurementSystem.Controllers
             return View(invoice);
         }
 
-        // GET: Invoices/Create
-        public ActionResult Create()
-        {
-            // 2. Покращено: Робимо список Замовлень (Orders) більш інформативним
-            var ordersList = db.Orders
-                .Include(o => o.User)
-                .Where(o => o.Status != OrderStatus.СКАСОВАНО) // Не можна створювати рахунки для скасованих заявок
-                .AsEnumerable() // Переходимо до обробки в пам'яті
-                .Select(o => new {
-                    Id = o.Id,
-                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
-                }).ToList();
-
-            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name");
-
-            // 3. Додано: Передаємо список статусів
-            ViewBag.Status = new SelectList(
-                Enum.GetValues(typeof(PaymentStatus))
-                    .Cast<PaymentStatus>()
-                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
-                "Id",
-                "Name",
-                (int)PaymentStatus.ОЧІКУЄТЬСЯ); // За замовчуванням "Очікується"
-
-            return View();
-        }
-
-        // POST: Invoices/Create
+        // POST: Invoices/GenerateInvoice
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Amount,InvoiceDate,Status,OrderId")] Invoice invoice)
+        public ActionResult GenerateInvoice(int orderId)
         {
-            if (ModelState.IsValid)
+            bool invoiceExists = db.Invoices.Any(i => i.OrderId == orderId);
+            if (invoiceExists)
             {
-                db.Invoices.Add(invoice);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                TempData["ErrorMessage"] = "Рахунок для цього замовлення вже існує.";
+                return RedirectToAction("Details", "Orders", new { id = orderId });
             }
 
-            // 4. Покращено: Повторно заповнюємо список Замовлень у разі помилки
-            var ordersList = db.Orders
-                .Include(o => o.User)
-                .Where(o => o.Status != OrderStatus.СКАСОВАНО)
-                .AsEnumerable()
-                .Select(o => new {
-                    Id = o.Id,
-                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
-                }).ToList();
+            var order = db.Orders.Find(orderId);
+            if (order == null)
+            {
+                return HttpNotFound("Замовлення не знайдено.");
+            }
 
-            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name", invoice.OrderId);
+            Invoice invoice = new Invoice
+            {
+                OrderId = order.Id,
+                Amount = order.TotalAmount,
+                DueDate = DateTime.Now.AddDays(14),
+                PaymentStatus = PaymentStatus.ОЧІКУЄТЬСЯ
+            };
 
-            // 5. Додано: Повторно передаємо список статусів
-            ViewBag.Status = new SelectList(
-                Enum.GetValues(typeof(PaymentStatus))
-                    .Cast<PaymentStatus>()
-                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
-                "Id",
-                "Name",
-                (int)invoice.Status);
+            db.Invoices.Add(invoice);
+            db.SaveChanges();
 
-            return View(invoice);
+            return RedirectToAction("Details", new { id = invoice.Id });
         }
+
 
         // GET: Invoices/Edit/5
         public ActionResult Edit(int? id)
@@ -114,69 +79,50 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Invoice invoice = db.Invoices.Find(id);
+            Invoice invoice = db.Invoices.Include(i => i.Order).FirstOrDefault(i => i.Id == id);
             if (invoice == null)
             {
                 return HttpNotFound();
             }
-
-            // 6. Покращено: Заповнюємо список Замовлень
-            var ordersList = db.Orders
-                .Include(o => o.User)
-                .AsEnumerable()
-                .Select(o => new {
-                    Id = o.Id,
-                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
-                }).ToList();
-
-            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name", invoice.OrderId);
-
-            // 7. Додано: Передаємо список статусів
-            ViewBag.Status = new SelectList(
-                Enum.GetValues(typeof(PaymentStatus))
-                    .Cast<PaymentStatus>()
-                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+            ViewBag.PaymentStatus = new SelectList(
+                Enum.GetValues(typeof(PaymentStatus)).Cast<PaymentStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),
                 "Id",
                 "Name",
-                (int)invoice.Status);
-
+                (int)invoice.PaymentStatus);
             return View(invoice);
         }
 
         // POST: Invoices/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Amount,InvoiceDate,Status,OrderId")] Invoice invoice)
+        public ActionResult Edit([Bind(Include = "Id,DueDate,PaymentStatus")] Invoice invoice)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(invoice).State = EntityState.Modified;
+                var invoiceInDb = db.Invoices.Find(invoice.Id);
+                if (invoiceInDb == null)
+                {
+                    return HttpNotFound();
+                }
+
+                invoiceInDb.DueDate = invoice.DueDate;
+                invoiceInDb.PaymentStatus = invoice.PaymentStatus;
+
+                db.Entry(invoiceInDb).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            // 8. Покращено: Повторно заповнюємо список Замовлень у разі помилки
-            var ordersList = db.Orders
-                .Include(o => o.User)
-                .AsEnumerable()
-                .Select(o => new {
-                    Id = o.Id,
-                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
-                }).ToList();
-
-            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name", invoice.OrderId);
-
-            // 9. Додано: Повторно передаємо список статусів
-            ViewBag.Status = new SelectList(
-                Enum.GetValues(typeof(PaymentStatus))
-                    .Cast<PaymentStatus>()
-                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+            var originalInvoice = db.Invoices.Include(i => i.Order).FirstOrDefault(i => i.Id == invoice.Id);
+            ViewBag.PaymentStatus = new SelectList(
+                Enum.GetValues(typeof(PaymentStatus)).Cast<PaymentStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),
                 "Id",
                 "Name",
-                (int)invoice.Status);
+                (int)invoice.PaymentStatus);
 
-            return View(invoice);
+            return View(originalInvoice);
         }
+
 
         // GET: Invoices/Delete/5
         public ActionResult Delete(int? id)
@@ -185,9 +131,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Invoice invoice = db.Invoices
-                                .Include(i => i.Order.User) // Включаємо дані
-                                .FirstOrDefault(i => i.Id == id);
+            Invoice invoice = db.Invoices.Include(i => i.Order.User).FirstOrDefault(i => i.Id == id);
             if (invoice == null)
             {
                 return HttpNotFound();
@@ -200,22 +144,19 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Invoice invoice = db.Invoices.Find(id);
+            Invoice invoice = db.Invoices
+                                .Include(i => i.Order.User)
+                                .FirstOrDefault(i => i.Id == id);
+
             if (invoice == null)
             {
                 return HttpNotFound();
             }
 
-
-            if (invoice.Status != PaymentStatus.ОЧІКУЄТЬСЯ)
+            if (invoice.PaymentStatus == PaymentStatus.ОЧІКУЄТЬСЯ || invoice.PaymentStatus == PaymentStatus.ЧАСТКОВО_ОПЛАЧЕНО || invoice.PaymentStatus == PaymentStatus.ПРОТЕРМІНОВАНО)
             {
-                ModelState.AddModelError("", $"Неможливо видалити рахунок зі статусом '{invoice.Status}'. Видаляти можна лише скасовані рахунки.");
-
-                db.Entry(invoice).Reference(i => i.Order).Load();
-                if (invoice.Order != null)
-                    db.Entry(invoice.Order).Reference(o => o.User).Load();
-
-                return View(invoice); 
+                ModelState.AddModelError("", "Неможливо видалити активний рахунок (який очікує на оплату або прострочений). Змініть статус на 'Оплачено', якщо потрібно.");
+                return View(invoice);
             }
 
             db.Invoices.Remove(invoice);

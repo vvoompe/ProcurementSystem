@@ -4,42 +4,51 @@
     ViewBag.Title = "Деталі Рахунку";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Деталі Рахунку #@Model.Id</h2>
 
 <div>
     <h4>Рахунок</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            Замовлення
+            Замовлення #
         </dt>
         <dd>
-            № @Html.DisplayFor(model => model.Order.Id) (від @Html.DisplayFor(model => model.Order.User.Login))
+            @Html.DisplayFor(model => model.OrderId)
+            (@Html.ActionLink("Переглянути замовлення", "Details", "Orders", new { id = Model.OrderId }, null))
+            </dt>
+
+        <dt>
+            Користувач
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Order.User.Login)
         </dd>
 
         <dt>
             @Html.DisplayNameFor(model => model.Amount)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Amount)
+            @Model.Amount.ToString("C")
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.InvoiceDate)
+            Оплатити до
         </dt>
         <dd>
-            @Model.InvoiceDate.ToShortDateString()
+            @Model.DueDate.ToString("dd.MM.yyyy")
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Status)
+            Статус оплати
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Status)
+            @Html.DisplayFor(model => model.PaymentStatus)
         </dd>
+
     </dl>
 </div>
-<p style="margin-top: 15px;">
-    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" }) |
-    @Html.ActionLink("Назад до списку", "Index")
+<p>
+    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Повернутися до Списку", "Index")
 </p>

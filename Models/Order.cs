@@ -19,15 +19,13 @@ namespace ProcurementSystem.Models
         [DataType(DataType.MultilineText)]
         public string Description { get; set; }
 
-        public OrderStatus Status { get; set; } 
-        public decimal TotalAmount { get; set; } 
+        public OrderStatus Status { get; set; }
+        public decimal TotalAmount { get; set; }
 
         public int UserId { get; set; }
         public virtual User User { get; set; }
 
         public virtual ICollection<OrderItem> OrderItems { get; set; }
         public virtual ICollection<Invoice> Invoices { get; set; }
-
-        public virtual ICollection<ReportOrder> ReportOrders { get; set; }
     }
 }

@@ -56,6 +56,14 @@ namespace ProcurementSystem.Controllers
         {
             if (ModelState.IsValid)
             {
+                bool productExists = db.Products.Any(p => p.Name == product.Name && p.Price == product.Price);
+                if (productExists)
+                {
+                    ModelState.AddModelError("", "Товар з такою назвою та ціною вже існує.");
+                    ViewBag.CategoryId = new SelectList(db.Categories, "Id", "Name", product.CategoryId);
+                    return View(product);
+                }
+
                 db.Products.Add(product);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -86,8 +94,28 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Name,Description,Price,Stock,CategoryId")] Product product)
         {
+            var offerIds = db.SupplierOffers
+                             .Where(so => so.ProductId == product.Id)
+                             .Select(so => so.Id);
+            bool isUsedInOrders = db.OrderItems.Any(oi => offerIds.Contains(oi.SupplierOfferId));
+
+            if (isUsedInOrders)
+            {
+                ModelState.AddModelError("", "Неможливо редагувати товар, оскільки він вже присутній у одному чи декількох замовленнях.");
+                ViewBag.CategoryId = new SelectList(db.Categories, "Id", "Name", product.CategoryId);
+                return View(product);
+            }
+
             if (ModelState.IsValid)
             {
+                bool productExists = db.Products.Any(p => p.Name == product.Name && p.Price == product.Price && p.Id != product.Id);
+                if (productExists)
+                {
+                    ModelState.AddModelError("", "Інший товар з такою назвою та ціною вже існує.");
+                    ViewBag.CategoryId = new SelectList(db.Categories, "Id", "Name", product.CategoryId);
+                    return View(product);
+                }
+
                 db.Entry(product).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -124,18 +152,15 @@ namespace ProcurementSystem.Controllers
                 return HttpNotFound();
             }
 
-
             var offerIds = db.SupplierOffers
                              .Where(so => so.ProductId == id)
                              .Select(so => so.Id);
-
 
             bool isUsedInOrders = db.OrderItems.Any(oi => offerIds.Contains(oi.SupplierOfferId));
 
             if (isUsedInOrders)
             {
                 ModelState.AddModelError("", "Неможливо видалити товар, оскільки він вже присутній у одному чи декількох замовленнях.");
-
                 db.Entry(product).Reference(p => p.Category).Load();
                 return View(product);
             }
@@ -147,7 +172,6 @@ namespace ProcurementSystem.Controllers
             }
 
             db.Products.Remove(product);
-
             db.SaveChanges();
 
             return RedirectToAction("Index");

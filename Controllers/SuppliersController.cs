@@ -109,12 +109,12 @@ namespace ProcurementSystem.Controllers
         {
             bool hasOffers = db.SupplierOffers.Any(so => so.SupplierId == id);
 
-            Supplier supplier = db.Suppliers.Find(id); 
+            Supplier supplier = db.Suppliers.Find(id);
 
             if (hasOffers)
             {
                 ModelState.AddModelError("", "Неможливо видалити постачальника, оскільки він має активні товарні пропозиції.");
-                return View(supplier); 
+                return View(supplier);
             }
 
             db.Suppliers.Remove(supplier);
