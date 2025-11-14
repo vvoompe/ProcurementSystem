@@ -14,7 +14,11 @@ namespace ProcurementSystem.Models
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime OrderDate { get; set; }
-        
+
+        [Display(Name = "Опис")]
+        [DataType(DataType.MultilineText)]
+        public string Description { get; set; }
+
         public OrderStatus Status { get; set; } 
         public decimal TotalAmount { get; set; } 
 

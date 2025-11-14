@@ -18,33 +18,53 @@
             </button>
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
 
+
                 <ul class="navbar-nav flex-grow-1">
+
+                    <li>@Html.ActionLink("Головна", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li>@Html.ActionLink("Товари", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Категорії", "Index", "Categories", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Постачальники", "Index", "Suppliers", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Пропозиції", "Index", "SupplierOffers", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Замовлення", "Index", "Orders", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Позиції (Items)", "Index", "OrderItems", new { area = "" }, new { @class = "nav-link" })</li>
+
+                        if (User.IsInRole("СПІВРОБІТНИК") || User.IsInRole("МЕНЕДЖЕР"))
+                        {
+                            <li>@Html.ActionLink("Заявки", "Index", "Orders", new { area = "" }, new { @class = "nav-link" })</li>
+                        }
+
+                        if (User.IsInRole("МЕНЕДЖЕР"))
+                        {
+                            <li>@Html.ActionLink("Товари", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Категорії", "Index", "Categories", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Постачальники", "Index", "Suppliers", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Пропозиції", "Index", "SupplierOffers", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Звіти", "Index", "Reports", new { area = "" }, new { @class = "nav-link" })</li>
+                        }
 
                         if (User.IsInRole("БУХГАЛТЕР"))
                         {
                             <li>@Html.ActionLink("Рахунки", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
                         }
 
-                        <li>@Html.ActionLink("Звіти", "Index", "Reports", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Зв'язки (ReportOrders)", "Index", "ReportOrders", new { area = "" }, new { @class = "nav-link" })</li>
-
                         if (User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Користувачі", "Index", "Users", new { area = "" }, new { @class = "nav-link" })</li>
-                        }
 
-                        <li>@Html.ActionLink("LINQ", "Index", "LinqQuery", new { area = "" }, new { @class = "nav-link" })</li>
+                            if (!User.IsInRole("МЕНЕДЖЕР"))
+                            {
+                                <li>@Html.ActionLink("Товари (Адмін)", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
+                                <li>@Html.ActionLink("Постачальники (Адмін)", "Index", "Suppliers", new { area = "" }, new { @class = "nav-link" })</li>
+                            }
+                            if (!User.IsInRole("БУХГАЛТЕР"))
+                            {
+                                <li>@Html.ActionLink("Рахунки (Адмін)", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
+                            }
+
+                            <li>@Html.ActionLink("LINQ", "Index", "LinqQuery", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Зв'язки (ReportOrders)", "Index", "ReportOrders", new { area = "" }, new { @class = "nav-link" })</li>
+                        }
                     }
                 </ul>
+
 
                 <ul class="navbar-nav">
                     @if (User.Identity.IsAuthenticated)

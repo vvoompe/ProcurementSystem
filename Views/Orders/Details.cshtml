@@ -1,95 +1,84 @@
 ﻿@model ProcurementSystem.Models.Order
+@using ProcurementSystem.Models.Enums // Додано для доступу до OrderStatus
 
 @{
-    ViewBag.Title = "Деталі Замовлення";
+    ViewBag.Title = "Деталі заявки";
 }
 
-<h2>@ViewBag.Title №@Model.Id</h2>
+<h2>@ViewBag.Title</h2>
 
 <div>
-    <h4>Замовлення</h4>
+    <h4>Заявка №@Model.Id</h4>
     <hr />
     <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.User.Login)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.User.Login)
-        </dd>
+        <dt>@Html.DisplayNameFor(model => model.OrderDate)</dt>
+        <dd>@Html.DisplayFor(model => model.OrderDate)</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.OrderDate)
-        </dt>
-        <dd>
-            @Model.OrderDate.ToShortDateString()
-        </dd>
+        <dt>@Html.DisplayNameFor(model => model.Status)</dt>
+        <dd>@Html.DisplayFor(model => model.Status)</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Status)
-        </dd>
+        <dt>@Html.DisplayNameFor(model => model.Description)</dt>
+        <dd>@Html.DisplayFor(model => model.Description)</dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.TotalAmount)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.TotalAmount)
-        </dd>
+        <dt>@Html.DisplayNameFor(model => model.TotalAmount)</dt>
+        <dd>@Html.DisplayFor(model => model.TotalAmount)</dd>
+
+        <dt>@Html.DisplayNameFor(model => model.User)</dt>
+        <dd>@(Model.User != null ? Model.User.Login : "N/A")</dd>
     </dl>
-
-    <h4 style="margin-top: 20px;">Позиції в замовленні</h4>
-    @if (Model.OrderItems.Any())
-    {
-        <table class="table table-striped table-sm">
-            <tr>
-                <th>Товар</th>
-                <th>К-сть</th>
-                <th>Ціна за од.</th>
-                <th>Сума</th>
-            </tr>
-            @foreach (var item in Model.OrderItems)
-            {
-                <tr>
-                    <td>@Html.DisplayFor(modelItem => item.Offer.Product.Name)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
-                    <td>@Html.DisplayFor(modelItem => item.UnitPrice)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Amount)</td>
-                </tr>
-            }
-        </table>
-    }
-    else
-    {
-        <p>Немає позицій у цьому замовленні.</p>
-    }
-
-    <h4 style="margin-top: 20px;">Рахунки по замовленню</h4>
-    @if (Model.Invoices.Any())
-    {
-        <table class="table table-striped table-sm">
-            <tr>
-                <th>Дата Рахунку</th>
-                <th>Сума</th>
-                <th>Статус</th>
-            </tr>
-            @foreach (var invoice in Model.Invoices)
-            {
-                <tr>
-                    <td>@invoice.InvoiceDate.ToShortDateString()</td>
-                    <td>@Html.DisplayFor(modelItem => invoice.Amount)</td>
-                    <td>@Html.DisplayFor(modelItem => invoice.Status)</td>
-                </tr>
-            }
-        </table>
-    }
-    else
-    {
-        <p>Немає рахунків по цьому замовленню.</p>
-    }
 </div>
-<p style="margin-top: 20px;">
-    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }, new { @class = "btn btn-primary" }) |
+
+<hr />
+
+<h4>Товари в заявці</h4>
+
+@* Кнопка "Додати" видима для Співробітника АБО Менеджера,
+    але ТІЛЬКИ якщо статус заявки "Pending"
+*@
+@if ((User.IsInRole("СПІВРОБІТНИК") || User.IsInRole("МЕНЕДЖЕР")) && Model.Status == OrderStatus.ВІДПРАВЛЕНО)
+{
+    <p>
+        @Html.ActionLink("Додати товар до заявки", "Create", "OrderItems", new { orderId = Model.Id }, new { @class = "btn btn-primary" })
+    </p>
+}
+
+<table class="table">
+    <tr>
+        <th>Товар (Пропозиція)</th>
+        <th>Кількість</th>
+        <th>Ціна за одиницю</th>
+        <th></th>
+    </tr>
+
+    @* Перевіряємо, чи Model.OrderItems не null, перед тим як почати цикл *@
+    @if (Model.OrderItems != null)
+    {
+        foreach (var item in Model.OrderItems)
+        {
+            <tr>
+                <td>
+                    @* Потрібно додати перевірку, чи item.Offer та item.Offer.Product не null *@
+                    @(item.Offer?.Product?.Name ?? "Товар не вказано")
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UnitPrice)
+                </td>
+                <td>
+                    @* Редагувати/Видаляти можна ТІЛЬКИ якщо статус "Pending" *@
+                    @if (Model.Status == OrderStatus.ВІДПРАВЛЕНО)
+                    {
+                        @Html.ActionLink("Редагувати", "Edit", "OrderItems", new { id = item.Id }, null) @:|
+                        @Html.ActionLink("Видалити", "Delete", "OrderItems", new { id = item.Id }, null)
+                    }
+                </td>
+            </tr>
+        }
+    }
+</table>
+
+<p>
     @Html.ActionLink("Назад до списку", "Index")
 </p>

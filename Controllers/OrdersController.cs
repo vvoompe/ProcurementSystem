@@ -12,6 +12,7 @@ using System.Web.Mvc;
 
 namespace ProcurementSystem.Controllers
 {
+    [Authorize]
     public class OrdersController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
@@ -19,7 +20,23 @@ namespace ProcurementSystem.Controllers
         // GET: Orders
         public ActionResult Index()
         {
-            var orders = db.Orders.Include(o => o.User);
+            IQueryable<Order> orders = db.Orders.Include(o => o.User);
+
+            if (User.IsInRole("СПІВРОБІТНИК"))
+            {
+                string currentUserLogin = User.Identity.Name;
+                var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
+
+                if (currentUser != null)
+                {
+                    orders = orders.Where(o => o.UserId == currentUser.Id);
+                }
+                else
+                {
+                    orders = orders.Where(o => false);
+                }
+            }
+
             return View(orders.ToList());
         }
 
@@ -40,51 +57,59 @@ namespace ProcurementSystem.Controllers
             {
                 return HttpNotFound();
             }
+
+            if (User.IsInRole("СПІВРОБІТНИК"))
+            {
+                string currentUserLogin = User.Identity.Name;
+                var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
+                if (currentUser == null || order.UserId != currentUser.Id)
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете переглядати чужі замовлення.");
+                }
+            }
+
             return View(order);
         }
 
         // GET: Orders/Create
+        [Authorize(Roles = "СПІВРОБІТНИК")]
         public ActionResult Create()
         {
-            ViewBag.UserId = new SelectList(db.Users, "Id", "Login");
-
-            // Подготовим список статусов заказа
-            ViewBag.Status = new SelectList(
-                Enum.GetValues(typeof(OrderStatus))
-                    .Cast<OrderStatus>()
-                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
-                "Id",
-                "Name");
-
             return View();
         }
 
         // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,OrderDate,Status,TotalAmount,UserId")] Order order)
+        [Authorize(Roles = "СПІВРОБІТНИК")]
+
+        public ActionResult Create([Bind(Include = "TotalAmount, Description")] Order order)
         {
+            string currentUserLogin = User.Identity.Name;
+            var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
+            if (currentUser == null)
+            {
+                ModelState.AddModelError("", "Помилка автентифікації користувача.");
+                return View(order);
+            }
+
+            order.UserId = currentUser.Id;
+            order.OrderDate = DateTime.Now;
+            order.Status = OrderStatus.ВІДПРАВЛЕНО;
+
             if (ModelState.IsValid)
             {
                 db.Orders.Add(order);
                 db.SaveChanges();
-                return RedirectToAction("Index");
-            }
 
-            // При ошибке повторно подготовим select-листы
-            ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
-            ViewBag.Status = new SelectList(
-                Enum.GetValues(typeof(OrderStatus))
-                    .Cast<OrderStatus>()
-                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
-                "Id",
-                "Name",
-                (int)order.Status);
+                return RedirectToAction("Details", new { id = order.Id });
+            }
 
             return View(order);
         }
 
         // GET: Orders/Edit/5
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -108,6 +133,7 @@ namespace ProcurementSystem.Controllers
         // POST: Orders/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,TotalAmount,UserId")] Order order)
         {
             if (ModelState.IsValid)
@@ -126,6 +152,7 @@ namespace ProcurementSystem.Controllers
         }
 
         // GET: Orders/Delete/5
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -143,13 +170,14 @@ namespace ProcurementSystem.Controllers
         // POST: Orders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult DeleteConfirmed(int id)
         {
             bool hasOrderItems = db.OrderItems.Any(oi => oi.OrderId == id);
             bool hasInvoices = db.Invoices.Any(i => i.OrderId == id);
             bool hasReportOrders = db.ReportOrders.Any(ro => ro.OrderId == id);
 
-            Order order = db.Orders.Find(id); // Знаходимо замовлення
+            Order order = db.Orders.Find(id);
 
             if (hasOrderItems || hasInvoices || hasReportOrders)
             {

@@ -11,6 +11,7 @@ using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
+    [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class CategoriesController : Controller
     {
         private ProcurementContext db = new ProcurementContext();

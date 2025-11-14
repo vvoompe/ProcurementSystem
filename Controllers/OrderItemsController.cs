@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ProcurementSystem;
+using ProcurementSystem.Models;
+using ProcurementSystem.Models.Enums; // Потрібно для OrderStatus
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -6,91 +9,86 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem;
-using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
+    [Authorize] 
     public class OrderItemsController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
 
-        private void PopulateOffersDropDownList(object selectedOffer = null)
+        private bool HasPermission(int orderId, out Order order)
         {
-            var offerList = db.SupplierOffers
-                .Include(o => o.Product)
-                .Include(o => o.Supplier)
-                .OrderBy(o => o.Product.Name)
-                .Select(o => new {
-                    o.Id,
-                    DisplayText = o.Product.Name + " (від " + o.Supplier.Name + ", " + o.Price + " грн)"
-                }).ToList();
+            order = db.Orders.Find(orderId);
+            if (order == null)
+            {
+                return false;
+            }
 
-            ViewBag.SupplierOfferId = new SelectList(offerList, "Id", "DisplayText", selectedOffer);
+            if (User.IsInRole("МЕНЕДЖЕР") || User.IsInRole("АДМІНІСТРАТОР"))
+            {
+                return true; 
+            }
+
+            if (User.IsInRole("СПІВРОБІТНИК"))
+            {
+                string currentUserLogin = User.Identity.Name;
+                var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
+
+                if (order.UserId == currentUser.Id && order.Status == OrderStatus.ВІДПРАВЛЕНО)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
-        private void PopulateOrdersDropDownList(object selectedOrder = null)
-        {
-            var orderList = db.Orders
-               .Include(o => o.User)
-               .OrderByDescending(o => o.OrderDate)
-               .Select(o => new {
-                   o.Id,
-                   DisplayText = "Замовлення №" + o.Id + " (від " + o.User.Login + ")"
-               }).ToList();
-
-            ViewBag.OrderId = new SelectList(orderList, "Id", "DisplayText", selectedOrder);
-        }
-
 
         // GET: OrderItems
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Index()
         {
-            var orderItems = db.OrderItems.Include(o => o.Offer.Product).Include(o => o.Order.User);
+            var orderItems = db.OrderItems.Include(o => o.Offer).Include(o => o.Order);
             return View(orderItems.ToList());
         }
 
-        // GET: OrderItems/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            OrderItem orderItem = db.OrderItems
-                                    .Include(o => o.Offer.Product)
-                                    .Include(o => o.Offer.Supplier)
-                                    .Include(o => o.Order.User)
-                                    .FirstOrDefault(o => o.Id == id);
-            if (orderItem == null)
-            {
-                return HttpNotFound();
-            }
-            return View(orderItem);
-        }
-
         // GET: OrderItems/Create
-        public ActionResult Create()
+        public ActionResult Create(int? orderId)
         {
-            PopulateOrdersDropDownList();
-            PopulateOffersDropDownList();
-            return View();
+            if (orderId == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "OrderId не надано.");
+            }
+
+            Order order;
+            if (!HasPermission(orderId.Value, out order))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете додавати позиції до цієї заявки.");
+            }
+
+            ViewBag.OfferId = new SelectList(db.SupplierOffers, "Id", "Id"); // Краще показувати ім'я товару
+            var model = new OrderItem { OrderId = orderId.Value };
+            return View(model);
         }
 
-        // POST: OrderItems/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Quantity,UnitPrice,Amount,OrderId,SupplierOfferId")] OrderItem orderItem)
+        public ActionResult Create([Bind(Include = "Id,OrderId,OfferId,Quantity,UnitPrice")] OrderItem orderItem)
         {
+            Order order;
+            if (!HasPermission(orderItem.OrderId, out order))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете додавати позиції до цієї заявки.");
+            }
+
             if (ModelState.IsValid)
             {
                 db.OrderItems.Add(orderItem);
                 db.SaveChanges();
-                // TODO: Потрібно оновити TotalAmount в батьківському Order
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", "Orders", new { id = orderItem.OrderId });
             }
 
-            PopulateOrdersDropDownList(orderItem.OrderId);
-            PopulateOffersDropDownList(orderItem.SupplierOfferId);
+            ViewBag.OfferId = new SelectList(db.SupplierOffers, "Id", "Id", orderItem.SupplierOfferId);
             return View(orderItem);
         }
 
@@ -106,27 +104,37 @@ namespace ProcurementSystem.Controllers
             {
                 return HttpNotFound();
             }
-            PopulateOrdersDropDownList(orderItem.OrderId);
-            PopulateOffersDropDownList(orderItem.SupplierOfferId);
+
+            Order order;
+            if (!HasPermission(orderItem.OrderId, out order))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете редагувати цю позицію.");
+            }
+
+            ViewBag.OfferId = new SelectList(db.SupplierOffers, "Id", "Id", orderItem.SupplierOfferId);
             return View(orderItem);
         }
 
-        // POST: OrderItems/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Quantity,UnitPrice,Amount,OrderId,SupplierOfferId")] OrderItem orderItem)
+        public ActionResult Edit([Bind(Include = "Id,OrderId,OfferId,Quantity,UnitPrice")] OrderItem orderItem)
         {
+            Order order;
+            if (!HasPermission(orderItem.OrderId, out order))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете редагувати цю позицію.");
+            }
+
             if (ModelState.IsValid)
             {
                 db.Entry(orderItem).State = EntityState.Modified;
                 db.SaveChanges();
-                // TODO: Потрібно оновити TotalAmount в батьківському Order
-                return RedirectToAction("Index");
+                return RedirectToAction("Details", "Orders", new { id = orderItem.OrderId });
             }
-            PopulateOrdersDropDownList(orderItem.OrderId);
-            PopulateOffersDropDownList(orderItem.SupplierOfferId);
+            ViewBag.OfferId = new SelectList(db.SupplierOffers, "Id", "Id", orderItem.SupplierOfferId);
             return View(orderItem);
         }
+
 
         // GET: OrderItems/Delete/5
         public ActionResult Delete(int? id)
@@ -135,14 +143,18 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            OrderItem orderItem = db.OrderItems
-                                    .Include(o => o.Offer.Product)
-                                    .Include(o => o.Order.User)
-                                    .FirstOrDefault(o => o.Id == id);
+            OrderItem orderItem = db.OrderItems.Include(oi => oi.Order).FirstOrDefault(oi => oi.Id == id);
             if (orderItem == null)
             {
                 return HttpNotFound();
             }
+
+            Order order;
+            if (!HasPermission(orderItem.OrderId, out order))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете видаляти цю позицію.");
+            }
+
             return View(orderItem);
         }
 
@@ -152,9 +164,21 @@ namespace ProcurementSystem.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             OrderItem orderItem = db.OrderItems.Find(id);
+            if (orderItem == null)
+            {
+                return HttpNotFound();
+            }
+
+            Order order;
+            if (!HasPermission(orderItem.OrderId, out order))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете видаляти цю позицію.");
+            }
+
+            int orderId = orderItem.OrderId; 
             db.OrderItems.Remove(orderItem);
             db.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Details", "Orders", new { id = orderId });
         }
 
         protected override void Dispose(bool disposing)

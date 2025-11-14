@@ -7,21 +7,24 @@
 <h2>@ViewBag.Title</h2>
 
 <p>
-    @Html.ActionLink("Створити Нове", "Create", null, new { @class = "btn btn-primary" })
+    @if (User.IsInRole("СПІВРОБІТНИК"))
+    {
+        @Html.ActionLink("Створити Нове", "Create", null, new { @class = "btn btn-primary" })
+    }
 </p>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.First().Id)
+            @Html.DisplayNameFor(model => model.Id)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.First().OrderDate)
+            @Html.DisplayNameFor(model => model.OrderDate)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.First().Status)
+            @Html.DisplayNameFor(model => model.Status)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.First().TotalAmount)
+            @Html.DisplayNameFor(model => model.TotalAmount)
         </th>
         <th>
             Користувач
@@ -29,30 +32,38 @@
         <th></th>
     </tr>
 
-    @foreach (var item in Model)
+    @if (Model != null)
     {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-            <td>
-                @item.OrderDate.ToShortDateString()
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalAmount)
-            </td>
-            <td>
-                @(item.User != null ? item.User.Login : String.Empty)
-            </td>
-            <td>
-                @Html.ActionLink("Редагувати", "Edit", new { id = item.Id }) |
-                @Html.ActionLink("Деталі", "Details", new { id = item.Id }) |
-                @Html.ActionLink("Видалити", "Delete", new { id = item.Id })
-            </td>
-        </tr>
+        foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @item.OrderDate.ToShortDateString()
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TotalAmount)
+                </td>
+                <td>
+                    @(item.User != null ? item.User.Login : String.Empty)
+                </td>
+                <td>
+
+                    @Html.ActionLink("Деталі", "Details", new { id = item.Id })
+
+                    @if (User.IsInRole("МЕНЕДЖЕР") || User.IsInRole("АДМІНІСТРАТОР"))
+                    {
+                        @: | @Html.ActionLink("Редагувати", "Edit", new { id = item.Id })
+                        @: | @Html.ActionLink("Видалити", "Delete", new { id = item.Id })
+                    }
+                </td>
+            </tr>
+        }
     }
 
 </table>

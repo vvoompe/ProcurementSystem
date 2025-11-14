@@ -6,7 +6,7 @@ using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "АДМІНІСТРАТОР")]
     public class UsersController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
