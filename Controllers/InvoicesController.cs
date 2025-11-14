@@ -11,6 +11,7 @@ using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
+    [Authorize(Roles = "БУХГАЛТЕР")]
     public class InvoicesController : Controller
     {
         private ProcurementContext db = new ProcurementContext();

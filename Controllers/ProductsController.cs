@@ -103,13 +103,10 @@ namespace ProcurementSystem.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            // ===== ВИПРАВЛЕННЯ ТУТ =====
-            // Ми замінюємо Find(id) на запит з .Include(), 
-            // щоб явно завантажити пов'язані дані про Категорію
+
             Product product = db.Products
-                                .Include(p => p.Category) // <-- Цей рядок завантажить Категорію
+                                .Include(p => p.Category) 
                                 .FirstOrDefault(p => p.Id == id);
-            // ===========================
 
             if (product == null)
             {

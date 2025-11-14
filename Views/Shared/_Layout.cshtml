@@ -16,12 +16,10 @@
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
 
                 <ul class="navbar-nav flex-grow-1">
 
-                    @* Показуємо всі ці посилання ТІЛЬКИ ЯКЩО користувач залогінився *@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li>@Html.ActionLink("Товари", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
@@ -30,23 +28,27 @@
                         <li>@Html.ActionLink("Пропозиції", "Index", "SupplierOffers", new { area = "" }, new { @class = "nav-link" })</li>
                         <li>@Html.ActionLink("Замовлення", "Index", "Orders", new { area = "" }, new { @class = "nav-link" })</li>
                         <li>@Html.ActionLink("Позиції (Items)", "Index", "OrderItems", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Рахунки", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
+
+                        if (User.IsInRole("БУХГАЛТЕР"))
+                        {
+                            <li>@Html.ActionLink("Рахунки", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
+                        }
+
                         <li>@Html.ActionLink("Звіти", "Index", "Reports", new { area = "" }, new { @class = "nav-link" })</li>
                         <li>@Html.ActionLink("Зв'язки (ReportOrders)", "Index", "ReportOrders", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("LINQ", "Index", "LinqQuery", new { area = "" }, new { @class = "nav-link" })</li>
 
-                        @* Показуємо посилання "Користувачі" ТІЛЬКИ АДМІНІСТРАТОРУ *@
                         if (User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Користувачі", "Index", "Users", new { area = "" }, new { @class = "nav-link" })</li>
                         }
+
+                        <li>@Html.ActionLink("LINQ", "Index", "LinqQuery", new { area = "" }, new { @class = "nav-link" })</li>
                     }
                 </ul>
 
                 <ul class="navbar-nav">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        @* Користувач залогінений: показуємо привітання та кнопку "Вийти" *@
                         <li>
                             <span class="nav-link text-light">Привіт, @User.Identity.Name!</span>
                         </li>
@@ -60,14 +62,12 @@
                     }
                     else
                     {
-                        @* Користувач - гість: показуємо кнопку "Увійти" *@
                         <li>@Html.ActionLink("Логін", "Login", "Account", new { area = "" }, new { @class = "nav-link" })</li>
                     }
                 </ul>
             </div>
         </div>
     </nav>
-
     <div class="container body-content">
         @RenderBody()
         <hr />
