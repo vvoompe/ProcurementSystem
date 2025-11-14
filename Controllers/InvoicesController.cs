@@ -40,38 +40,35 @@ namespace ProcurementSystem.Controllers
         }
 
         // POST: Invoices/GenerateInvoice
+        // Цей метод генерує рахунок з Order/Details
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult GenerateInvoice(int orderId)
         {
-            // 1. Перевіряємо, чи існує вже рахунок для цього замовлення
             bool invoiceExists = db.Invoices.Any(i => i.OrderId == orderId);
             if (invoiceExists)
             {
-                // Можна додати TempData для повідомлення про помилку
+                TempData["ErrorMessage"] = "Рахунок для цього замовлення вже існує.";
                 return RedirectToAction("Details", "Orders", new { id = orderId });
             }
 
-            // 2. Знаходимо оригінальне замовлення
             var order = db.Orders.Find(orderId);
             if (order == null)
             {
                 return HttpNotFound("Замовлення не знайдено.");
             }
 
-            // 3. Створюємо рахунок з даними замовлення
             Invoice invoice = new Invoice
             {
                 OrderId = order.Id,
-                Amount = order.TotalAmount, // Автоматичне копіювання суми
-                DueDate = DateTime.Now.AddDays(14), // Наприклад, 14 днів на оплату
+                Amount = order.TotalAmount, // Автоматичне копіювання
+                DueDate = DateTime.Now.AddDays(14), // Термін 14 днів
                 PaymentStatus = PaymentStatus.ОЧІКУЄТЬСЯ
             };
 
             db.Invoices.Add(invoice);
             db.SaveChanges();
 
-            // 4. Перенаправляємо на деталі новоствореного рахунку
             return RedirectToAction("Details", new { id = invoice.Id });
         }
 
@@ -99,30 +96,25 @@ namespace ProcurementSystem.Controllers
         // POST: Invoices/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Обмежуємо Bind ТІЛЬКИ тими полями, які можна міняти.
-        // Amount та OrderId тут більше не вказані.
+        // Тільки ці поля можна редагувати
         public ActionResult Edit([Bind(Include = "Id,DueDate,PaymentStatus")] Invoice invoice)
         {
             if (ModelState.IsValid)
             {
-                // 1. Отримуємо оригінальний запис з бази даних
                 var invoiceInDb = db.Invoices.Find(invoice.Id);
                 if (invoiceInDb == null)
                 {
                     return HttpNotFound();
                 }
 
-                // 2. Оновлюємо лише ті поля, які дозволено
                 invoiceInDb.DueDate = invoice.DueDate;
                 invoiceInDb.PaymentStatus = invoice.PaymentStatus;
 
-                // 3. Зберігаємо зміни
                 db.Entry(invoiceInDb).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            // Якщо модель не валідна, нам потрібно знову завантажити дані для View
             var originalInvoice = db.Invoices.Include(i => i.Order).FirstOrDefault(i => i.Id == invoice.Id);
             ViewBag.PaymentStatus = new SelectList(
                 Enum.GetValues(typeof(PaymentStatus)).Cast<PaymentStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),

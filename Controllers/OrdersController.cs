@@ -38,6 +38,19 @@ namespace ProcurementSystem.Controllers
                 }
             }
 
+            // Ми також додали бухгалтера до перегляду
+            if (User.IsInRole("БУХГАЛТЕР"))
+            {
+                string currentUserLogin = User.Identity.Name;
+                var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
+
+                if (currentUser == null)
+                {
+                    orders = orders.Where(o => false);
+                }
+                // Бухгалтер бачить всі замовлення, тому додатковий фільтр не потрібен
+            }
+
             return View(orders.ToList());
         }
 
@@ -52,7 +65,7 @@ namespace ProcurementSystem.Controllers
                             .Include(o => o.User)
                             .Include(o => o.OrderItems.Select(oi => oi.Offer.Product.Category))
                             .Include(o => o.OrderItems.Select(oi => oi.Offer.Supplier))
-                            .Include(o => o.Invoices) // Це вже було, чудово
+                            .Include(o => o.Invoices)
                             .FirstOrDefault(o => o.Id == id);
 
             if (order == null)
@@ -70,10 +83,7 @@ namespace ProcurementSystem.Controllers
                 }
             }
 
-            // ДОДАНО: Логіка для кнопки генерації рахунку
-            // Показати кнопку, якщо:
-            // 1. Рахунки ще не існують для цього замовлення.
-            // 2. Користувач - Бухгалтер АБО Адміністратор.
+            // Додано для логіки кнопки генерації рахунку
             ViewBag.CanGenerateInvoice = !order.Invoices.Any() &&
                                          (User.IsInRole("БУХГАЛТЕР") || User.IsInRole("АДМІНІСТРАТОР"));
 
@@ -91,6 +101,7 @@ namespace ProcurementSystem.Controllers
                             .Include(so => so.Product)
                             .Include(so => so.Supplier)
                             .ToList();
+
 
             var offerSelectList = offers.AsEnumerable().Select(p => new SelectListItem
             {
@@ -206,10 +217,7 @@ namespace ProcurementSystem.Controllers
             if (ModelState.IsValid)
             {
                 db.Entry(order).State = EntityState.Modified;
-
-                // Ми вручну вимикаємо зміну TotalAmount, оскільки це поле лише для читання
                 db.Entry(order).Property(o => o.TotalAmount).IsModified = false;
-
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -246,14 +254,17 @@ namespace ProcurementSystem.Controllers
         {
             bool hasOrderItems = db.OrderItems.Any(oi => oi.OrderId == id);
             bool hasInvoices = db.Invoices.Any(i => i.OrderId == id);
+            // bool hasReportOrders = db.ReportOrders.Any(ro => ro.OrderId == id); <-- ВИДАЛЕНО
 
             Order order = db.Orders.Find(id);
 
+            // if (hasOrderItems || hasInvoices || hasReportOrders) <-- ЗМІНЕНО
             if (hasOrderItems || hasInvoices)
             {
                 string errorMessage = "Неможливо видалити замовлення. ";
                 if (hasOrderItems) errorMessage += "Існують пов'язані позиції. ";
                 if (hasInvoices) errorMessage += "Існують пов'язані рахунки. ";
+                // if (hasReportOrders) errorMessage += "Існують пов'язані звіти."; <-- ВИДАЛЕНО
 
                 ModelState.AddModelError("", errorMessage);
 

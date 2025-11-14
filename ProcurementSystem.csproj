@@ -138,7 +138,6 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\InvoicesController.cs" />
     <Compile Include="Controllers\LinqQueryController.cs" />
-    <Compile Include="Controllers\OrderItemsController.cs" />
     <Compile Include="Controllers\OrdersController.cs" />
     <Compile Include="Controllers\ProductsController.cs" />
     <Compile Include="Controllers\ReportOrdersController.cs" />
@@ -158,8 +157,6 @@
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Models\Product.cs" />
-    <Compile Include="Models\Report.cs" />
-    <Compile Include="Models\ReportOrder.cs" />
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SupplierOffer.cs" />
     <Compile Include="Models\User.cs" />
@@ -167,9 +164,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\CategoryProductCountViewModel.cs" />
     <Compile Include="ViewModels\CreateOrderViewModel.cs" />
-    <Compile Include="ViewModels\FinancialReportViewModel.cs.cs" />
+    <Compile Include="ViewModels\FinancialReportViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
-    <Compile Include="ViewModels\QuantityReportViewModel.cs.cs" />
+    <Compile Include="ViewModels\QuantityReportViewModel.cs" />
     <Compile Include="ViewModels\ReportDateRangeViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -251,13 +248,7 @@
     <Content Include="Views\SupplierOffers\Edit.cshtml" />
     <Content Include="Views\SupplierOffers\Details.cshtml" />
     <Content Include="Views\SupplierOffers\Delete.cshtml" />
-    <Content Include="Views\OrderItems\Index.cshtml" />
-    <Content Include="Views\OrderItems\Create.cshtml" />
-    <Content Include="Views\OrderItems\Edit.cshtml" />
-    <Content Include="Views\OrderItems\Details.cshtml" />
-    <Content Include="Views\OrderItems\Delete.cshtml" />
     <Content Include="Views\Invoices\Index.cshtml" />
-    <Content Include="Views\Invoices\Create.cshtml" />
     <Content Include="Views\Invoices\Edit.cshtml" />
     <Content Include="Views\Invoices\Details.cshtml" />
     <Content Include="Views\Invoices\Delete.cshtml" />

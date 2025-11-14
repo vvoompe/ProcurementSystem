@@ -6,7 +6,13 @@
 
 <h2>Деталі Замовлення №@Model.Id</h2>
 
-@* ДОДАНО: Блок для генерації рахунку *@
+@* Повідомлення про помилку, якщо рахунок вже існує *@
+@if (TempData["ErrorMessage"] != null)
+{
+    <div classV="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@* Кнопка генерації рахунку *@
 @if (ViewBag.CanGenerateInvoice)
 {
     <div class="alert alert-info">

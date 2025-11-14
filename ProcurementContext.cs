@@ -21,6 +21,7 @@ namespace ProcurementSystem
         public DbSet<SupplierOffer> SupplierOffers { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
 
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();

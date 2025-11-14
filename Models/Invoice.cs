@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using ProcurementSystem.Models.Enums;
+using ProcurementSystem.Models.Enums; 
 
 namespace ProcurementSystem.Models
 {
     public class Invoice
     {
         public int Id { get; set; }
-        public decimal Amount { get; set; }
-        public DateTime InvoiceDate { get; set; }
-        public DateTime DueDate { get; set; }
-        public PaymentStatus PaymentStatus { get; set; }
-
         public int OrderId { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime DueDate { get; set; }
+
+        public PaymentStatus PaymentStatus { get; set; } 
+
         public virtual Order Order { get; set; }
     }
 }
