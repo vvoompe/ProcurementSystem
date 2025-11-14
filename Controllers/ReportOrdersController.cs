@@ -8,30 +8,14 @@ using System.Web;
 using System.Web.Mvc;
 using ProcurementSystem;
 using ProcurementSystem.Models;
+using ProcurementSystem.Models.Enums; 
 
 namespace ProcurementSystem.Controllers
 {
+    [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class ReportOrdersController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
-        private void PopulateOrdersDropDownList(object selectedOrder = null)
-        {
-            var orderList = db.Orders
-               .Include(o => o.User)
-               .OrderByDescending(o => o.OrderDate)
-               .Select(o => new {
-                   o.Id,
-                   DisplayText = "Замовлення №" + o.Id + " (від " + o.User.Login + ")"
-               }).ToList();
-
-            ViewBag.OrderId = new SelectList(orderList, "Id", "DisplayText", selectedOrder);
-        }
-
-        private void PopulateReportsDropDownList(object selectedReport = null)
-        {
-            ViewBag.ReportId = new SelectList(db.Reports.OrderBy(r => r.Period), "Id", "Type", selectedReport);
-        }
-
 
         // GET: ReportOrders
         public ActionResult Index()
@@ -61,8 +45,10 @@ namespace ProcurementSystem.Controllers
         // GET: ReportOrders/Create
         public ActionResult Create()
         {
-            PopulateOrdersDropDownList();
-            PopulateReportsDropDownList();
+            // 4. Покращено: Інформативні випадаючі списки
+            ViewBag.OrderId = new SelectList(db.Orders.Include(o => o.User).AsEnumerable()
+                .Select(o => new { Id = o.Id, Name = $"Заявка №{o.Id} ({o.User?.Login ?? "N/A"})" }), "Id", "Name");
+            ViewBag.ReportId = new SelectList(db.Reports, "Id", "Period");
             return View();
         }
 
@@ -78,8 +64,9 @@ namespace ProcurementSystem.Controllers
                 return RedirectToAction("Index");
             }
 
-            PopulateOrdersDropDownList(reportOrder.OrderId);
-            PopulateReportsDropDownList(reportOrder.ReportId);
+            ViewBag.OrderId = new SelectList(db.Orders.Include(o => o.User).AsEnumerable()
+                .Select(o => new { Id = o.Id, Name = $"Заявка №{o.Id} ({o.User?.Login ?? "N/A"})" }), "Id", "Name", reportOrder.OrderId);
+            ViewBag.ReportId = new SelectList(db.Reports, "Id", "Period", reportOrder.ReportId);
             return View(reportOrder);
         }
 
@@ -95,8 +82,9 @@ namespace ProcurementSystem.Controllers
             {
                 return HttpNotFound();
             }
-            PopulateOrdersDropDownList(reportOrder.OrderId);
-            PopulateReportsDropDownList(reportOrder.ReportId);
+            ViewBag.OrderId = new SelectList(db.Orders.Include(o => o.User).AsEnumerable()
+                .Select(o => new { Id = o.Id, Name = $"Заявка №{o.Id} ({o.User?.Login ?? "N/A"})" }), "Id", "Name", reportOrder.OrderId);
+            ViewBag.ReportId = new SelectList(db.Reports, "Id", "Period", reportOrder.ReportId);
             return View(reportOrder);
         }
 
@@ -111,8 +99,9 @@ namespace ProcurementSystem.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            PopulateOrdersDropDownList(reportOrder.OrderId);
-            PopulateReportsDropDownList(reportOrder.ReportId);
+            ViewBag.OrderId = new SelectList(db.Orders.Include(o => o.User).AsEnumerable()
+                .Select(o => new { Id = o.Id, Name = $"Заявка №{o.Id} ({o.User?.Login ?? "N/A"})" }), "Id", "Name", reportOrder.OrderId);
+            ViewBag.ReportId = new SelectList(db.Reports, "Id", "Period", reportOrder.ReportId);
             return View(reportOrder);
         }
 
@@ -124,9 +113,9 @@ namespace ProcurementSystem.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             ReportOrder reportOrder = db.ReportOrders
-                            .Include(r => r.Order.User)
-                            .Include(r => r.Report)
-                            .FirstOrDefault(r => r.Id == id);
+                                        .Include(r => r.Order.User)
+                                        .Include(r => r.Report)
+                                        .FirstOrDefault(r => r.Id == id);
             if (reportOrder == null)
             {
                 return HttpNotFound();
@@ -139,7 +128,26 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            ReportOrder reportOrder = db.ReportOrders.Find(id);
+            ReportOrder reportOrder = db.ReportOrders
+                                        .Include(ro => ro.Order)
+                                        .FirstOrDefault(ro => ro.Id == id);
+
+            if (reportOrder == null)
+            {
+                return HttpNotFound();
+            }
+
+
+            if (reportOrder.Order != null &&
+               (reportOrder.Order.Status == OrderStatus.ДОСТАВЛЕНО ||
+                reportOrder.Order.Status == OrderStatus.СКАСОВАНО))
+            {
+                ModelState.AddModelError("", $"Неможливо видалити зв'язок: заявка №{reportOrder.OrderId} вже має фінальний статус '{reportOrder.Order.Status}'.");
+
+                db.Entry(reportOrder).Reference(ro => ro.Report).Load();
+                return View(reportOrder); 
+            }
+
             db.ReportOrders.Remove(reportOrder);
             db.SaveChanges();
             return RedirectToAction("Index");

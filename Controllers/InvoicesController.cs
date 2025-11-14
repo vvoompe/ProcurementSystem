@@ -8,31 +8,21 @@ using System.Web;
 using System.Web.Mvc;
 using ProcurementSystem;
 using ProcurementSystem.Models;
+using ProcurementSystem.Models.Enums; // Додано для доступу до PaymentStatus
 
 namespace ProcurementSystem.Controllers
 {
+    // 1. Додано: Захист всього контролера
     [Authorize(Roles = "БУХГАЛТЕР, МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class InvoicesController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
 
-        private void PopulateOrdersDropDownList(object selectedOrder = null)
-        {
-            var orderList = db.Orders
-               .Include(o => o.User)
-               .OrderByDescending(o => o.OrderDate)
-               .Select(o => new {
-                   o.Id,
-                   DisplayText = "Замовлення №" + o.Id + " (від " + o.User.Login + ")"
-               }).ToList();
-
-            ViewBag.OrderId = new SelectList(orderList, "Id", "DisplayText", selectedOrder);
-        }
-
         // GET: Invoices
         public ActionResult Index()
         {
-            var invoices = db.Invoices.Include(i => i.Order.User);
+            // Включаємо пов'язані дані 'Order' для відображення в таблиці
+            var invoices = db.Invoices.Include(i => i.Order);
             return View(invoices.ToList());
         }
 
@@ -43,7 +33,10 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Invoice invoice = db.Invoices.Include(i => i.Order.User).FirstOrDefault(i => i.Id == id);
+            // Включаємо дані про Замовлення та Користувача
+            Invoice invoice = db.Invoices
+                                .Include(i => i.Order.User)
+                                .FirstOrDefault(i => i.Id == id);
             if (invoice == null)
             {
                 return HttpNotFound();
@@ -54,7 +47,27 @@ namespace ProcurementSystem.Controllers
         // GET: Invoices/Create
         public ActionResult Create()
         {
-            PopulateOrdersDropDownList();
+            // 2. Покращено: Робимо список Замовлень (Orders) більш інформативним
+            var ordersList = db.Orders
+                .Include(o => o.User)
+                .Where(o => o.Status != OrderStatus.СКАСОВАНО) // Не можна створювати рахунки для скасованих заявок
+                .AsEnumerable() // Переходимо до обробки в пам'яті
+                .Select(o => new {
+                    Id = o.Id,
+                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
+                }).ToList();
+
+            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name");
+
+            // 3. Додано: Передаємо список статусів
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(PaymentStatus))
+                    .Cast<PaymentStatus>()
+                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)PaymentStatus.ОЧІКУЄТЬСЯ); // За замовчуванням "Очікується"
+
             return View();
         }
 
@@ -70,7 +83,27 @@ namespace ProcurementSystem.Controllers
                 return RedirectToAction("Index");
             }
 
-            PopulateOrdersDropDownList(invoice.OrderId);
+            // 4. Покращено: Повторно заповнюємо список Замовлень у разі помилки
+            var ordersList = db.Orders
+                .Include(o => o.User)
+                .Where(o => o.Status != OrderStatus.СКАСОВАНО)
+                .AsEnumerable()
+                .Select(o => new {
+                    Id = o.Id,
+                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
+                }).ToList();
+
+            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name", invoice.OrderId);
+
+            // 5. Додано: Повторно передаємо список статусів
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(PaymentStatus))
+                    .Cast<PaymentStatus>()
+                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)invoice.Status);
+
             return View(invoice);
         }
 
@@ -86,7 +119,27 @@ namespace ProcurementSystem.Controllers
             {
                 return HttpNotFound();
             }
-            PopulateOrdersDropDownList(invoice.OrderId);
+
+            // 6. Покращено: Заповнюємо список Замовлень
+            var ordersList = db.Orders
+                .Include(o => o.User)
+                .AsEnumerable()
+                .Select(o => new {
+                    Id = o.Id,
+                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
+                }).ToList();
+
+            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name", invoice.OrderId);
+
+            // 7. Додано: Передаємо список статусів
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(PaymentStatus))
+                    .Cast<PaymentStatus>()
+                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)invoice.Status);
+
             return View(invoice);
         }
 
@@ -101,7 +154,27 @@ namespace ProcurementSystem.Controllers
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
-            PopulateOrdersDropDownList(invoice.OrderId);
+
+            // 8. Покращено: Повторно заповнюємо список Замовлень у разі помилки
+            var ordersList = db.Orders
+                .Include(o => o.User)
+                .AsEnumerable()
+                .Select(o => new {
+                    Id = o.Id,
+                    Name = $"Заявка №{o.Id} (Співробітник: {o.User?.Login ?? "N/A"}, Опис: {o.Description})"
+                }).ToList();
+
+            ViewBag.OrderId = new SelectList(ordersList, "Id", "Name", invoice.OrderId);
+
+            // 9. Додано: Повторно передаємо список статусів
+            ViewBag.Status = new SelectList(
+                Enum.GetValues(typeof(PaymentStatus))
+                    .Cast<PaymentStatus>()
+                    .Select(s => new { Id = (int)s, Name = s.ToString() }),
+                "Id",
+                "Name",
+                (int)invoice.Status);
+
             return View(invoice);
         }
 
@@ -112,7 +185,9 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Invoice invoice = db.Invoices.Include(i => i.Order.User).FirstOrDefault(i => i.Id == id);
+            Invoice invoice = db.Invoices
+                                .Include(i => i.Order.User) // Включаємо дані
+                                .FirstOrDefault(i => i.Id == id);
             if (invoice == null)
             {
                 return HttpNotFound();
@@ -126,6 +201,23 @@ namespace ProcurementSystem.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             Invoice invoice = db.Invoices.Find(id);
+            if (invoice == null)
+            {
+                return HttpNotFound();
+            }
+
+
+            if (invoice.Status != PaymentStatus.ОЧІКУЄТЬСЯ)
+            {
+                ModelState.AddModelError("", $"Неможливо видалити рахунок зі статусом '{invoice.Status}'. Видаляти можна лише скасовані рахунки.");
+
+                db.Entry(invoice).Reference(i => i.Order).Load();
+                if (invoice.Order != null)
+                    db.Entry(invoice.Order).Reference(o => o.User).Load();
+
+                return View(invoice); 
+            }
+
             db.Invoices.Remove(invoice);
             db.SaveChanges();
             return RedirectToAction("Index");

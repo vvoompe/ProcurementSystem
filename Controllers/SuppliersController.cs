@@ -107,14 +107,14 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            bool hasOffers = db.SupplierOffers.Any(o => o.SupplierId == id);
+            bool hasOffers = db.SupplierOffers.Any(so => so.SupplierId == id);
 
-            Supplier supplier = db.Suppliers.Find(id);
+            Supplier supplier = db.Suppliers.Find(id); 
 
             if (hasOffers)
             {
-                ModelState.AddModelError("", "Неможливо видалити постачальника, оскільки у нього є активні пропозиції товарів (SupplierOffers).");
-                return View(supplier);
+                ModelState.AddModelError("", "Неможливо видалити постачальника, оскільки він має активні товарні пропозиції.");
+                return View(supplier); 
             }
 
             db.Suppliers.Remove(supplier);

@@ -97,18 +97,14 @@ namespace ProcurementSystem.Controllers
         }
 
         // GET: Products/Delete/5
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-
-
-            Product product = db.Products
-                                .Include(p => p.Category) 
-                                .FirstOrDefault(p => p.Id == id);
-
+            Product product = db.Products.Include(p => p.Category).FirstOrDefault(p => p.Id == id);
             if (product == null)
             {
                 return HttpNotFound();
@@ -119,11 +115,41 @@ namespace ProcurementSystem.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult DeleteConfirmed(int id)
         {
             Product product = db.Products.Find(id);
+            if (product == null)
+            {
+                return HttpNotFound();
+            }
+
+
+            var offerIds = db.SupplierOffers
+                             .Where(so => so.ProductId == id)
+                             .Select(so => so.Id);
+
+
+            bool isUsedInOrders = db.OrderItems.Any(oi => offerIds.Contains(oi.SupplierOfferId));
+
+            if (isUsedInOrders)
+            {
+                ModelState.AddModelError("", "Неможливо видалити товар, оскільки він вже присутній у одному чи декількох замовленнях.");
+
+                db.Entry(product).Reference(p => p.Category).Load();
+                return View(product);
+            }
+
+            var unusedOffers = db.SupplierOffers.Where(so => so.ProductId == id).ToList();
+            if (unusedOffers.Any())
+            {
+                db.SupplierOffers.RemoveRange(unusedOffers);
+            }
+
             db.Products.Remove(product);
+
             db.SaveChanges();
+
             return RedirectToAction("Index");
         }
 

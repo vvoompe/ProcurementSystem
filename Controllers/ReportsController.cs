@@ -11,7 +11,7 @@ using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
-    [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР, БУХГАЛТЕР")]
+    [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class ReportsController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
@@ -109,13 +109,17 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            var relatedOrders = db.ReportOrders.Where(ro => ro.ReportId == id);
-            if (relatedOrders.Any())
+
+            bool isLinked = db.ReportOrders.Any(ro => ro.ReportId == id);
+
+            Report report = db.Reports.Find(id); // Знаходимо звіт
+
+            if (isLinked)
             {
-                db.ReportOrders.RemoveRange(relatedOrders);
+                ModelState.AddModelError("", "Неможливо видалити звіт, оскільки він містить зв'язані заявки.");
+                return View(report); 
             }
 
-            Report report = db.Reports.Find(id);
             db.Reports.Remove(report);
             db.SaveChanges();
             return RedirectToAction("Index");

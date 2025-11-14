@@ -122,15 +122,18 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
+
             bool isLinked = db.OrderItems.Any(oi => oi.SupplierOfferId == id);
+
             SupplierOffer supplierOffer = db.SupplierOffers.Find(id);
 
             if (isLinked)
             {
                 ModelState.AddModelError("", "Неможливо видалити пропозицію, оскільки вона використовується в існуючих замовленнях.");
+
                 db.Entry(supplierOffer).Reference(s => s.Product).Load();
                 db.Entry(supplierOffer).Reference(s => s.Supplier).Load();
-                return View(supplierOffer);
+                return View(supplierOffer); 
             }
 
             db.SupplierOffers.Remove(supplierOffer);
