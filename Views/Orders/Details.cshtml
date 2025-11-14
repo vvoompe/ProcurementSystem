@@ -1,5 +1,5 @@
 ﻿@model ProcurementSystem.Models.Order
-@using ProcurementSystem.Models.Enums // Додано для доступу до OrderStatus
+@using ProcurementSystem.Models.Enums
 
 @{
     ViewBag.Title = "Деталі заявки";
@@ -32,9 +32,7 @@
 
 <h4>Товари в заявці</h4>
 
-@* Кнопка "Додати" видима для Співробітника АБО Менеджера,
-    але ТІЛЬКИ якщо статус заявки "Pending"
-*@
+
 @if ((User.IsInRole("СПІВРОБІТНИК") || User.IsInRole("МЕНЕДЖЕР")) && Model.Status == OrderStatus.ВІДПРАВЛЕНО)
 {
     <p>
@@ -50,14 +48,12 @@
         <th></th>
     </tr>
 
-    @* Перевіряємо, чи Model.OrderItems не null, перед тим як почати цикл *@
     @if (Model.OrderItems != null)
     {
         foreach (var item in Model.OrderItems)
         {
             <tr>
                 <td>
-                    @* Потрібно додати перевірку, чи item.Offer та item.Offer.Product не null *@
                     @(item.Offer?.Product?.Name ?? "Товар не вказано")
                 </td>
                 <td>
@@ -67,7 +63,6 @@
                     @Html.DisplayFor(modelItem => item.UnitPrice)
                 </td>
                 <td>
-                    @* Редагувати/Видаляти можна ТІЛЬКИ якщо статус "Pending" *@
                     @if (Model.Status == OrderStatus.ВІДПРАВЛЕНО)
                     {
                         @Html.ActionLink("Редагувати", "Edit", "OrderItems", new { id = item.Id }, null) @:|

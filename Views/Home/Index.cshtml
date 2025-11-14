@@ -1,0 +1,132 @@
+﻿@{
+    ViewBag.Title = "Головна сторінка";
+}
+
+
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-4">Ласкаво просимо до АСВЗ!</h1>
+        <p class="lead">Автоматизована Система Відділу Закупівель.</p>
+        <hr class="my-4">
+
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <p>Вітаємо, <strong>@User.Identity.Name</strong>. Оберіть дію, щоб почати роботу.</p>
+        }
+        else
+        {
+            <p>Будь ласка, @Html.ActionLink("увійдіть у систему", "Login", "Account"), щоб отримати доступ до функцій.</p>
+        }
+    </div>
+</div>
+
+
+@if (User.Identity.IsAuthenticated)
+{
+    <h3 class="mb-3">Швидкі дії</h3>
+
+    <div class="row g-4">
+
+        @if (User.IsInRole("СПІВРОБІТНИК"))
+        {
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Створити Нову Заявку</h4>
+                        <p class="card-text">Потрібно замовити канцтовари, техніку чи інші матеріали? Створіть нову заявку на закупівлю тут.</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        @Html.ActionLink("Створити зараз", "Create", "Orders", new { }, new { @class = "btn btn-primary btn-lg" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Мої Заявки</h4>
+                        <p class="card-text">Перегляньте список усіх ваших заявок та відстежуйте їхні статуси (напр., "В обробці", "Схвалено", "Доставлено").</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        @Html.ActionLink("Переглянути список", "Index", "Orders", new { }, new { @class = "btn btn-outline-secondary" })
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (User.IsInRole("МЕНЕДЖЕР"))
+        {
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Керування Заявками</h4>
+                        <p class="card-text">Переглядайте, схвалюйте та редагуйте заявки, що надійшли від співробітників.</p>
+                        <p>@Html.ActionLink("До заявок", "Index", "Orders", new { }, new { @class = "btn btn-primary" })</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Каталог Товарів</h4>
+                        <p class="card-text">Керуйте загальним каталогом товарів, категорій та пропозицій від постачальників.</p>
+                        <p>@Html.ActionLink("До товарів", "Index", "Products", new { }, new { @class = "btn btn-outline-secondary" })</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Постачальники</h4>
+                        <p class="card-text">Керуйте базою даних постачальників та їхніми контактними даними.</p>
+                        <p>@Html.ActionLink("До постачальників", "Index", "Suppliers", new { }, new { @class = "btn btn-outline-secondary" })</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (User.IsInRole("БУХГАЛТЕР"))
+        {
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Рахунки (Інвойси)</h4>
+                        <p class="card-text">Обробляйте рахунки-фактури, що надійшли, та реєструйте оплати за замовленнями.</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        @Html.ActionLink("Перейти до рахунків", "Index", "Invoices", new { }, new { @class = "btn btn-primary btn-lg" })
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (User.IsInRole("АДМІНІСТРАТОР"))
+        {
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h4 class="card-title">Керування Користувачами</h4>
+                        <p class="card-text">Додавайте нових користувачів, видаляйте старих та призначайте їм відповідні ролі (Менеджер, Бухгалтер тощо).</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        @Html.ActionLink("Керувати", "Index", "Users", new { }, new { @class = "btn btn-danger btn-lg" })
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Ефективність</h3>
+            <p>Наша система дозволяє оптимізувати процес закупівель, від створення заявки до оплати рахунку, зменшуючи паперову роботу та прискорюючи схвалення.</p>
+        </div>
+        <div class="col-md-6">
+            <h3>Контроль</h3>
+            <p>Завдяки чіткому розподілу ролей, кожен співробітник має доступ лише до необхідних йому функцій, забезпечуючи безпеку та підзвітність.</p>
+        </div>
+    </div>
+}

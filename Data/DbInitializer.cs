@@ -15,11 +15,14 @@ namespace ProcurementSystem.Data
             var user2 = new User { Login = "manager_user", Password = "password", Role = UserRole.МЕНЕДЖЕР };
             var user3 = new User { Login = "Admin", Password = "12345", Role = UserRole.АДМІНІСТРАТОР };
             var user4 = new User { Login = "USER", Password = "12345", Role = UserRole.СПІВРОБІТНИК };
+            var user5 = new User { Login = "bukg", Password = "12345", Role = UserRole.БУХГАЛТЕР };
+
 
             context.Users.Add(user1);
             context.Users.Add(user2);
             context.Users.Add(user3);
             context.Users.Add(user4);
+            context.Users.Add(user5);
 
             // 2. Категорії
             var category1 = new Category { Name = "Ноутбуки", Description = "Портативні комп'ютери" };

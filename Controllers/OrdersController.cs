@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using ProcurementSystem.ViewModels; 
 
 namespace ProcurementSystem.Controllers
 {
@@ -22,6 +23,7 @@ namespace ProcurementSystem.Controllers
         {
             IQueryable<Order> orders = db.Orders.Include(o => o.User);
 
+
             if (User.IsInRole("СПІВРОБІТНИК"))
             {
                 string currentUserLogin = User.Identity.Name;
@@ -33,7 +35,7 @@ namespace ProcurementSystem.Controllers
                 }
                 else
                 {
-                    orders = orders.Where(o => false);
+                    orders = orders.Where(o => false); 
                 }
             }
 
@@ -49,7 +51,8 @@ namespace ProcurementSystem.Controllers
             }
             Order order = db.Orders
                             .Include(o => o.User)
-                            .Include(o => o.OrderItems.Select(oi => oi.Offer.Product))
+                            .Include(o => o.OrderItems.Select(oi => oi.Offer.Product.Category)) // Включаємо всі необхідні дані
+                            .Include(o => o.OrderItems.Select(oi => oi.Offer.Supplier))
                             .Include(o => o.Invoices)
                             .FirstOrDefault(o => o.Id == id);
 
@@ -58,6 +61,7 @@ namespace ProcurementSystem.Controllers
                 return HttpNotFound();
             }
 
+ 
             if (User.IsInRole("СПІВРОБІТНИК"))
             {
                 string currentUserLogin = User.Identity.Name;
@@ -75,37 +79,85 @@ namespace ProcurementSystem.Controllers
         [Authorize(Roles = "СПІВРОБІТНИК")]
         public ActionResult Create()
         {
-            return View();
+            var viewModel = new CreateOrderViewModel();
+
+            var offers = db.SupplierOffers
+                            .Include(so => so.Product)
+                            .Include(so => so.Supplier)
+                            .ToList(); 
+
+
+            var offerSelectList = offers.AsEnumerable().Select(p => new SelectListItem
+            {
+                Value = p.Id.ToString(),
+                Text = $"{p.Product.Name} (Пост: {p.Supplier.Name}) - {p.Price:C}" 
+            });
+
+            viewModel.OfferList = new SelectList(offerSelectList, "Value", "Text");
+
+            return View(viewModel);
         }
 
         // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "СПІВРОБІТНИК")]
-
-        public ActionResult Create([Bind(Include = "TotalAmount, Description")] Order order)
+        public ActionResult Create(CreateOrderViewModel viewModel)
         {
             string currentUserLogin = User.Identity.Name;
             var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
+
             if (currentUser == null)
             {
                 ModelState.AddModelError("", "Помилка автентифікації користувача.");
-                return View(order);
             }
 
-            order.UserId = currentUser.Id;
-            order.OrderDate = DateTime.Now;
-            order.Status = OrderStatus.ВІДПРАВЛЕНО;
+            var selectedOffer = db.SupplierOffers.Find(viewModel.SupplierOfferId);
+            if (selectedOffer == null)
+            {
+                ModelState.AddModelError("SupplierOfferId", "Обраний товар не знайдено.");
+            }
 
             if (ModelState.IsValid)
             {
+                Order order = new Order();
+                order.UserId = currentUser.Id; 
+                order.Description = viewModel.Description; 
+                order.OrderDate = DateTime.Now; 
+                order.Status = OrderStatus.ВІДПРАВЛЕНО; 
+
+                order.TotalAmount = selectedOffer.Price * viewModel.Quantity;
+
                 db.Orders.Add(order);
+                db.SaveChanges(); 
+
+                OrderItem orderItem = new OrderItem();
+                orderItem.OrderId = order.Id; 
+                orderItem.SupplierOfferId = viewModel.SupplierOfferId; 
+                orderItem.Quantity = viewModel.Quantity; 
+                orderItem.UnitPrice = selectedOffer.Price; 
+
+                orderItem.Amount = selectedOffer.Price * viewModel.Quantity;
+
+                db.OrderItems.Add(orderItem);
                 db.SaveChanges();
 
                 return RedirectToAction("Details", new { id = order.Id });
             }
 
-            return View(order);
+            var offers = db.SupplierOffers
+                            .Include(so => so.Product)
+                            .Include(so => so.Supplier)
+                            .ToList();
+            var offerSelectList = offers.AsEnumerable().Select(p => new SelectListItem
+            {
+                Value = p.Id.ToString(),
+                Text = $"{p.Product.Name} (Пост: {p.Supplier.Name}) - {p.Price:C}"
+            });
+
+            viewModel.OfferList = new SelectList(offerSelectList, "Value", "Text", viewModel.SupplierOfferId);
+
+            return View(viewModel); 
         }
 
         // GET: Orders/Edit/5
@@ -134,7 +186,7 @@ namespace ProcurementSystem.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
-        public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,TotalAmount,UserId")] Order order)
+        public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,TotalAmount,UserId,Description")] Order order)
         {
             if (ModelState.IsValid)
             {

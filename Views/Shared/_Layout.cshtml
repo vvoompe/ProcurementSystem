@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - АСВЗ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
@@ -53,6 +54,7 @@
                             {
                                 <li>@Html.ActionLink("Товари (Адмін)", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
                                 <li>@Html.ActionLink("Постачальники (Адмін)", "Index", "Suppliers", new { area = "" }, new { @class = "nav-link" })</li>
+                                <li>@Html.ActionLink("Пропозиції (Адмін)", "Index", "SupplierOffers", new { area = "" }, new { @class = "nav-link" })</li>
                             }
                             if (!User.IsInRole("БУХГАЛТЕР"))
                             {

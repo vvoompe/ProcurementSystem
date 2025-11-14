@@ -11,6 +11,7 @@ using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
+    [Authorize(Roles = "лемедфеп, юдл╡м╡ярпюрнп")]
     public class SupplierOffersController : Controller
     {
         private ProcurementContext db = new ProcurementContext();

@@ -1,4 +1,5 @@
-﻿@model ProcurementSystem.Models.Order
+﻿@* 1. ЗМІНЕНО: Модель тепер CreateOrderViewModel *@
+@model ProcurementSystem.ViewModels.CreateOrderViewModel
 
 @{
     ViewBag.Title = "Створити нову заявку";
@@ -10,30 +11,53 @@
 {
     @Html.AntiForgeryToken()
 
-<div class="form-horizontal">
-    <h4>Заявка на закупівлю</h4>
-    <hr />
-    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-horizontal">
+        <h4>Нова заявка на закупівлю</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
+        @* 2. Додано: Поле "Опис" *@
+        <div class="form-group mb-3">
+            @Html.LabelFor(m => m.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 4 })
+                @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 5 })
-            @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+        <hr />
+        <h5>Перший товар у заявці</h5>
+
+        @* 3. Додано: Поле "Товар (Пропозиція)" *@
+        <div class="form-group mb-3">
+            @Html.LabelFor(m => m.SupplierOfferId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @* Використовуємо 'Model.OfferList' з нашої ViewModel *@
+                @Html.DropDownListFor(m => m.SupplierOfferId, Model.OfferList, "-- Оберіть товар --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.SupplierOfferId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @* 4. Додано: Поле "Кількість" *@
+        <div class="form-group mb-3">
+            @Html.LabelFor(m => m.Quantity, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(m => m.Quantity, new { htmlAttributes = new { @class = "form-control", type = "number", min = "1", value = "1" } })
+                @Html.ValidationMessageFor(m => m.Quantity, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @*
+            ВИДАЛЕНО: Поля OrderDate, Status, UserId, TotalAmount.
+            Вони тепер встановлюються автоматично в контролері.
+        *@
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10" style="margin-top: 10px;">
+                <input type="submit" value="Створити Заявку" class="btn btn-primary" />
+            </div>
         </div>
     </div>
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.TotalAmount, "Очікувана сума", htmlAttributes: new { @class = "control-label col-md-2" })
-    </div>
-
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10" style="margin-top: 10px;">
-            <input type="submit" value="Створити" class="btn btn-primary" />
-        </div>
-    </div>
-</div>
 }
 
 <div>
