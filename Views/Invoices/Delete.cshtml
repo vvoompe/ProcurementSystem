@@ -7,47 +7,50 @@
 <h2>Видалення Рахунку</h2>
 
 <h3>Ви впевнені, що хочете видалити цей рахунок?</h3>
-<div>
-    <h4>Рахунок #@Model.Id</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            Замовлення #
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.OrderId)
-        </dd>
 
-        <dt>
-            Користувач
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Order.User.Login)
-        </dd>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Amount)
-        </dt>
-        <dd>
-            @Model.Amount.ToString("C")
-        </dd>
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-        <dt>
-            Статус оплати
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.PaymentStatus)
-        </dd>
+    <div>
+        <h4>Рахунок #@Model.Id</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                Замовлення #
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.OrderId)
+            </dd>
 
-    </dl>
+            <dt>
+                Користувач
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Order.User.Login)
+            </dd>
 
-    @using (Html.BeginForm())
-    {
-        @Html.AntiForgeryToken()
+            <dt>
+                @Html.DisplayNameFor(model => model.Amount)
+            </dt>
+            <dd>
+                @Model.Amount.ToString("C")
+            </dd>
+
+            <dt>
+                Статус оплати
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.PaymentStatus)
+            </dd>
+
+        </dl>
 
         <div class="form-actions no-color">
             <input type="submit" value="Видалити" class="btn btn-danger" /> |
             @Html.ActionLink("Повернутися до Списку", "Index")
         </div>
-    }
-</div>
+    </div>
+}

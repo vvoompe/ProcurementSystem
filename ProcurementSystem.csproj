@@ -148,6 +148,7 @@
     <Compile Include="Data\DbInitializer.cs" />
     <Compile Include="Enums\OrderStatus.cs" />
     <Compile Include="Enums\PaymentStatus.cs" />
+    <Compile Include="Enums\ReportType.cs" />
     <Compile Include="Enums\UserRole.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -157,6 +158,8 @@
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Report.cs" />
+    <Compile Include="Models\ReportItem.cs" />
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SupplierOffer.cs" />
     <Compile Include="Models\User.cs" />
@@ -259,15 +262,11 @@
     <Content Include="Views\Invoices\Details.cshtml" />
     <Content Include="Views\Invoices\Delete.cshtml" />
     <Content Include="Views\Reports\Index.cshtml" />
-    <Content Include="Views\ReportOrders\Index.cshtml" />
-    <Content Include="Views\ReportOrders\Create.cshtml" />
-    <Content Include="Views\ReportOrders\Edit.cshtml" />
-    <Content Include="Views\ReportOrders\Details.cshtml" />
-    <Content Include="Views\ReportOrders\Delete.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Reports\FinancialReport.cshtml" />
     <Content Include="Views\Reports\QuantityReport.cshtml" />
+    <Content Include="Views\Reports\Delete.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,52 +1,56 @@
 ﻿@model ProcurementSystem.Models.OrderItem
 
 @{
-    ViewBag.Title = "Видалення позиції";
+    ViewBag.Title = "Видалення Позиції Замовлення";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Видалення Позиції Замовлення</h2>
 
-<h3 class="text-danger">Ви впевнені, що хочете видалити це?</h3>
-<div>
-    <h4>Позиція Замовлення</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            Замовлення
-        </dt>
-        <dd>
-            № @Html.DisplayFor(model => model.Order.Id) (від @Html.DisplayFor(model => model.Order.User.Login))
-        </dd>
+<h3>Ви впевнені, що хочете видалити цю позицію?</h3>
 
-        <dt>
-            Пропозиція
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Offer.Product.Name)
-        </dd>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Quantity)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Quantity)
-        </dd>
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Amount)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Amount)
-        </dd>
-    </dl>
+    <div>
+        <h4>Позиція Замовлення</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                Замовлення #
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Order.Id) (@Html.DisplayFor(model => model.Order.Status))
+            </dd>
 
-    @using (Html.BeginForm())
-    {
-        @Html.AntiForgeryToken()
+            <dt>
+                Товар
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Offer.Product.Name)
+            </dd>
 
-        <div class="form-actions no-color" style="margin-top: 15px;">
+            <dt>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Quantity)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Amount)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Amount)
+            </dd>
+
+        </dl>
+
+        <div class="form-actions no-color">
             <input type="submit" value="Видалити" class="btn btn-danger" /> |
-            @Html.ActionLink("Назад до списку", "Index")
+            @Html.ActionLink("Повернутися до Списку", "Index")
         </div>
-    }
-</div>
+    </div>
+}

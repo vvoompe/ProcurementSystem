@@ -1,64 +1,121 @@
-﻿@model ProcurementSystem.ViewModels.ReportDateRangeViewModel
-
+﻿@model IEnumerable<ProcurementSystem.Models.Report>
 @{
     ViewBag.Title = "Звіти";
+    var rangeViewModel = ViewBag.DateRangeViewModel as ProcurementSystem.ViewModels.ReportDateRangeViewModel ?? new ProcurementSystem.ViewModels.ReportDateRangeViewModel();
 }
 
 <h2>Генератор Звітів</h2>
-<p>Оберіть період для генерації звітів.</p>
-
+<p>Оберіть період для генерації та збереження нового звіту.</p>
 <hr />
 
 <div class="row">
     <div class="col-md-6">
         <h4>Фінансовий звіт за категоріями</h4>
-        <p>Детальний звіт по проданим товарам, згрупований за категоріями, із загальними сумами.</p>
         @using (Html.BeginForm("FinancialReport", "Reports", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
             <div class="form-group mb-2">
-                @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label" })
-                @Html.EditorFor(model => model.StartDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+                @Html.LabelFor(m => rangeViewModel.StartDate, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(m => rangeViewModel.StartDate, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                @Html.ValidationMessageFor(m => rangeViewModel.StartDate, "", new { @class = "text-danger" })
             </div>
 
             <div class="form-group mb-2">
-                @Html.LabelFor(model => model.EndDate, htmlAttributes: new { @class = "control-label" })
-                @Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
+                @Html.LabelFor(m => rangeViewModel.EndDate, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(m => rangeViewModel.EndDate, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                @Html.ValidationMessageFor(m => rangeViewModel.EndDate, "", new { @class = "text-danger" })
             </div>
 
             <div class="form-group">
-                <input type="submit" value="Сформувати" class="btn btn-primary" />
+                <input type="submit" value="Сформувати та Зберегти" class="btn btn-primary" />
             </div>
         }
     </div>
 
     <div class="col-md-6">
         <h4>Звіт за кількістю товарів</h4>
-        <p>Зведений звіт про загальну кількість проданих одиниць кожного товару.</p>
         @using (Html.BeginForm("QuantityReport", "Reports", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
             <div class="form-group mb-2">
-                @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label" })
-                @Html.EditorFor(model => model.StartDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+                @Html.LabelFor(m => rangeViewModel.StartDate, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(m => rangeViewModel.StartDate, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                @Html.ValidationMessageFor(m => rangeViewModel.StartDate, "", new { @class = "text-danger" })
             </div>
 
             <div class="form-group mb-2">
-                @Html.LabelFor(model => model.EndDate, htmlAttributes: new { @class = "control-label" })
-                @Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
+                @Html.LabelFor(m => rangeViewModel.EndDate, htmlAttributes: new { @class = "control-label" })
+                @Html.EditorFor(m => rangeViewModel.EndDate, new { htmlAttributes = new { @class = "form-control", type = "datetime-local" } })
+                @Html.ValidationMessageFor(m => rangeViewModel.EndDate, "", new { @class = "text-danger" })
             </div>
 
             <div class="form-group">
-                <input type="submit" value="Сформувати" class="btn btn-info" />
+                <input type="submit" value="Сформувати та Зберегти" class="btn btn-info" />
             </div>
         }
     </div>
 </div>
+
+<hr />
+
+<h2>Збережені Звіти</h2>
+
+@if (!Model.Any())
+{
+    <p>Збережених звітів ще немає.</p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.ReportType)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreatedDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreatedByLogin)
+                </th>
+                <th>
+                    Період
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.GrandTotal)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReportType)
+                    </td>
+                    <td>
+                        @item.CreatedDate.ToString("g")
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CreatedByLogin)
+                    </td>
+                    <td>
+                        @item.StartDate.ToString("g") - @item.EndDate.ToString("g")
+                    </td>
+                    <td>
+                        @item.GrandTotal.ToString("C")
+                    </td>
+                    <td>
+                        @Html.ActionLink("Переглянути", "Details", new { id = item.Id }, new { @class = "btn btn-xs btn-primary" }) |
+                        @Html.ActionLink("Видалити", "Delete", new { id = item.Id }, new { @class = "btn btn-xs btn-danger" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

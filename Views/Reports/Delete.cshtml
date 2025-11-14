@@ -1,0 +1,53 @@
+﻿@model ProcurementSystem.Models.Report
+
+@{
+    ViewBag.Title = "Видалення Звіту";
+}
+
+<h2>Видалення Звіту</h2>
+
+<h3>Ви впевнені, що хочете видалити цей збережений звіт?</h3>
+<div>
+    <h4>Звіт #@Model.Id</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ReportType)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ReportType)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreatedDate)
+        </dt>
+        <dd>
+            @Model.CreatedDate.ToString("g")
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreatedByLogin)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CreatedByLogin)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GrandTotal)
+        </dt>
+        <dd>
+            @Model.GrandTotal.ToString("C")
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Видалити" class="btn btn-danger" /> |
+            @Html.ActionLink("Повернутися до Списку", "Index")
+        </div>
+    }
+</div>

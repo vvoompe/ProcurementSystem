@@ -30,10 +30,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            SupplierOffer supplierOffer = db.SupplierOffers
-                                            .Include(s => s.Product)
-                                            .Include(s => s.Supplier)
-                                            .FirstOrDefault(s => s.Id == id);
+            SupplierOffer supplierOffer = db.SupplierOffers.Include(s => s.Product).Include(s => s.Supplier).FirstOrDefault(s => s.Id == id);
             if (supplierOffer == null)
             {
                 return HttpNotFound();
@@ -52,10 +49,19 @@ namespace ProcurementSystem.Controllers
         // POST: SupplierOffers/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Price,SupplierId,ProductId")] SupplierOffer supplierOffer)
+        public ActionResult Create([Bind(Include = "Id,Price,ProductId,SupplierId")] SupplierOffer supplierOffer)
         {
             if (ModelState.IsValid)
             {
+                bool offerExists = db.SupplierOffers.Any(so => so.ProductId == supplierOffer.ProductId && so.SupplierId == supplierOffer.SupplierId);
+                if (offerExists)
+                {
+                    ModelState.AddModelError("", "Цей постачальник вже має пропозицію для цього товару. Ви можете редагувати існуючу.");
+                    ViewBag.ProductId = new SelectList(db.Products, "Id", "Name", supplierOffer.ProductId);
+                    ViewBag.SupplierId = new SelectList(db.Suppliers, "Id", "Name", supplierOffer.SupplierId);
+                    return View(supplierOffer);
+                }
+
                 db.SupplierOffers.Add(supplierOffer);
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -86,10 +92,19 @@ namespace ProcurementSystem.Controllers
         // POST: SupplierOffers/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Price,SupplierId,ProductId")] SupplierOffer supplierOffer)
+        public ActionResult Edit([Bind(Include = "Id,Price,ProductId,SupplierId")] SupplierOffer supplierOffer)
         {
             if (ModelState.IsValid)
             {
+                bool offerExists = db.SupplierOffers.Any(so => so.ProductId == supplierOffer.ProductId && so.SupplierId == supplierOffer.SupplierId && so.Id != supplierOffer.Id);
+                if (offerExists)
+                {
+                    ModelState.AddModelError("", "Цей постачальник вже має пропозицію для цього товару.");
+                    ViewBag.ProductId = new SelectList(db.Products, "Id", "Name", supplierOffer.ProductId);
+                    ViewBag.SupplierId = new SelectList(db.Suppliers, "Id", "Name", supplierOffer.SupplierId);
+                    return View(supplierOffer);
+                }
+
                 db.Entry(supplierOffer).State = EntityState.Modified;
                 db.SaveChanges();
                 return RedirectToAction("Index");
@@ -106,10 +121,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            SupplierOffer supplierOffer = db.SupplierOffers
-                                            .Include(s => s.Product)
-                                            .Include(s => s.Supplier)
-                                            .FirstOrDefault(s => s.Id == id);
+            SupplierOffer supplierOffer = db.SupplierOffers.Include(s => s.Product).Include(s => s.Supplier).FirstOrDefault(s => s.Id == id);
             if (supplierOffer == null)
             {
                 return HttpNotFound();
@@ -122,18 +134,16 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-
-            bool isLinked = db.OrderItems.Any(oi => oi.SupplierOfferId == id);
+            bool isUsedInOrders = db.OrderItems.Any(oi => oi.SupplierOfferId == id);
 
             SupplierOffer supplierOffer = db.SupplierOffers.Find(id);
 
-            if (isLinked)
+            if (isUsedInOrders)
             {
-                ModelState.AddModelError("", "Неможливо видалити пропозицію, оскільки вона використовується в існуючих замовленнях.");
-
+                ModelState.AddModelError("", "Неможливо видалити пропозицію, оскільки вона вже використовується у одному чи декількох замовленнях.");
                 db.Entry(supplierOffer).Reference(s => s.Product).Load();
                 db.Entry(supplierOffer).Reference(s => s.Supplier).Load();
-                return View(supplierOffer); 
+                return View(supplierOffer);
             }
 
             db.SupplierOffers.Remove(supplierOffer);

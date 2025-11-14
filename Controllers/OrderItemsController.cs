@@ -1,7 +1,4 @@
-﻿using ProcurementSystem;
-using ProcurementSystem.Models;
-using ProcurementSystem.Models.Enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -9,117 +6,72 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using ProcurementSystem;
+using ProcurementSystem.Models;
+using ProcurementSystem.Models.Enums;
 
 namespace ProcurementSystem.Controllers
 {
-    [Authorize] 
+    [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class OrderItemsController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
 
-        private void UpdateOrderTotalAmount(int orderId)
+        // GET: OrderItems
+        public ActionResult Index()
         {
-            var order = db.Orders.Find(orderId);
-            if (order != null)
-            {
-                decimal newTotalAmount = db.OrderItems
-                                           .Where(oi => oi.OrderId == orderId)
-                                           .Sum(oi => (decimal?)oi.Amount) ?? 0; 
-
-                order.TotalAmount = newTotalAmount;
-                db.Entry(order).State = EntityState.Modified;
-            }
+            var orderItems = db.OrderItems.Include(o => o.Offer.Product).Include(o => o.Order.User);
+            return View(orderItems.ToList());
         }
 
-        private bool HasPermission(int orderId, out Order order)
+        // GET: OrderItems/Details/5
+        public ActionResult Details(int? id)
         {
-            order = db.Orders.Find(orderId);
-            if (order == null)
+            if (id == null)
             {
-                return false;
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-
-            if (User.IsInRole("МЕНЕДЖЕР") || User.IsInRole("АДМІНІСТРАТОР"))
+            OrderItem orderItem = db.OrderItems
+                                    .Include(o => o.Offer.Product)
+                                    .Include(o => o.Offer.Supplier)
+                                    .Include(o => o.Order.User)
+                                    .FirstOrDefault(o => o.Id == id);
+            if (orderItem == null)
             {
-                return true;
+                return HttpNotFound();
             }
-
-            if (User.IsInRole("СПІВРОБІТНИК"))
-            {
-                string currentUserLogin = User.Identity.Name;
-                var currentUser = db.Users.FirstOrDefault(u => u.Login == currentUserLogin);
-
-                if (currentUser != null && order.UserId == currentUser.Id && order.Status == OrderStatus.ВІДПРАВЛЕНО)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return View(orderItem);
         }
+
+        // --- УПРАВЛІННЯ ПОЗИЦІЯМИ ---
+        // Створення (Create) та Редагування (Edit) позицій напряму - ДУЖЕ НЕБЕЗПЕЧНО.
+        // Вони не оновлюють TotalAmount в Order і не керують Product.Stock.
+        // Ми залишаємо ці методи, але вони несуть ризик для цілісності даних.
+        // В ідеальному світі ці методи мали б бути видалені,
+        // а управління позиціями - відбуватися ТІЛЬКИ через OrdersController.
 
         // GET: OrderItems/Create
-        public ActionResult Create(int? orderId)
+        public ActionResult Create()
         {
-            if (orderId == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "OrderId не надано.");
-            }
-
-            Order order;
-            if (!HasPermission(orderId.Value, out order))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете додавати позиції до цієї заявки.");
-            }
-
-            // Заповнюємо ViewBag для випадаючого списку
-            ViewBag.SupplierOfferId = new SelectList(
-                db.SupplierOffers.Include(so => so.Product).Include(so => so.Supplier).AsEnumerable().Select(p => new {
-                    Id = p.Id,
-                    Text = $"{p.Product.Name} ({p.Supplier.Name}) - {p.Price:C}"
-                }),
-                "Id", "Text");
-
-            var model = new OrderItem { OrderId = orderId.Value };
-            return View(model);
+            ViewBag.OrderId = new SelectList(db.Orders, "Id", "Description");
+            ViewBag.SupplierOfferId = new SelectList(db.SupplierOffers, "Id", "Id");
+            return View();
         }
 
+        // POST: OrderItems/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "OrderId,SupplierOfferId,Quantity")] OrderItem orderItem)
+        public ActionResult Create([Bind(Include = "Id,Quantity,UnitPrice,Amount,OrderId,SupplierOfferId")] OrderItem orderItem)
         {
-            Order order;
-            if (!HasPermission(orderItem.OrderId, out order))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете додавати позиції до цієї заявки.");
-            }
-
-            var selectedOffer = db.SupplierOffers.Find(orderItem.SupplierOfferId);
-            if (selectedOffer == null)
-            {
-                ModelState.AddModelError("SupplierOfferId", "Обраний товар не знайдено.");
-            }
-
             if (ModelState.IsValid)
             {
-                orderItem.UnitPrice = selectedOffer.Price;
-                orderItem.Amount = orderItem.Quantity * orderItem.UnitPrice;
-
                 db.OrderItems.Add(orderItem);
-
-                UpdateOrderTotalAmount(orderItem.OrderId);
-
-                db.SaveChanges(); 
-
-                return RedirectToAction("Details", "Orders", new { id = orderItem.OrderId });
+                db.SaveChanges();
+                return RedirectToAction("Index");
             }
 
-            ViewBag.SupplierOfferId = new SelectList(
-                db.SupplierOffers.Include(so => so.Product).Include(so => so.Supplier).AsEnumerable().Select(p => new {
-                    Id = p.Id,
-                    Text = $"{p.Product.Name} ({p.Supplier.Name}) - {p.Price:C}"
-                }),
-                "Id", "Text", orderItem.SupplierOfferId);
-
+            ViewBag.OrderId = new SelectList(db.Orders, "Id", "Description", orderItem.OrderId);
+            ViewBag.SupplierOfferId = new SelectList(db.SupplierOffers, "Id", "Id", orderItem.SupplierOfferId);
             return View(orderItem);
         }
 
@@ -135,60 +87,24 @@ namespace ProcurementSystem.Controllers
             {
                 return HttpNotFound();
             }
-
-            Order order;
-            if (!HasPermission(orderItem.OrderId, out order))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете редагувати цю позицію.");
-            }
-
-            ViewBag.SupplierOfferId = new SelectList(
-                db.SupplierOffers.Include(so => so.Product).Include(so => so.Supplier).AsEnumerable().Select(p => new {
-                    Id = p.Id,
-                    Text = $"{p.Product.Name} ({p.Supplier.Name}) - {p.Price:C}"
-                }),
-                "Id", "Text", orderItem.SupplierOfferId);
-
+            ViewBag.OrderId = new SelectList(db.Orders, "Id", "Description", orderItem.OrderId);
+            ViewBag.SupplierOfferId = new SelectList(db.SupplierOffers, "Id", "Id", orderItem.SupplierOfferId);
             return View(orderItem);
         }
 
+        // POST: OrderItems/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,OrderId,SupplierOfferId,Quantity")] OrderItem orderItem)
+        public ActionResult Edit([Bind(Include = "Id,Quantity,UnitPrice,Amount,OrderId,SupplierOfferId")] OrderItem orderItem)
         {
-            Order order;
-            if (!HasPermission(orderItem.OrderId, out order))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете редагувати цю позицію.");
-            }
-
-            var selectedOffer = db.SupplierOffers.Find(orderItem.SupplierOfferId);
-            if (selectedOffer == null)
-            {
-                ModelState.AddModelError("SupplierOfferId", "Обраний товар не знайдено.");
-            }
-
             if (ModelState.IsValid)
             {
-                orderItem.UnitPrice = selectedOffer.Price;
-                orderItem.Amount = orderItem.Quantity * orderItem.UnitPrice;
-
                 db.Entry(orderItem).State = EntityState.Modified;
-
-                UpdateOrderTotalAmount(orderItem.OrderId);
-
-                db.SaveChanges(); 
-
-                return RedirectToAction("Details", "Orders", new { id = orderItem.OrderId });
+                db.SaveChanges();
+                return RedirectToAction("Index");
             }
-
-            ViewBag.SupplierOfferId = new SelectList(
-                db.SupplierOffers.Include(so => so.Product).Include(so => so.Supplier).AsEnumerable().Select(p => new {
-                    Id = p.Id,
-                    Text = $"{p.Product.Name} ({p.Supplier.Name}) - {p.Price:C}"
-                }),
-                "Id", "Text", orderItem.SupplierOfferId);
-
+            ViewBag.OrderId = new SelectList(db.Orders, "Id", "Description", orderItem.OrderId);
+            ViewBag.SupplierOfferId = new SelectList(db.SupplierOffers, "Id", "Id", orderItem.SupplierOfferId);
             return View(orderItem);
         }
 
@@ -200,21 +116,13 @@ namespace ProcurementSystem.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             OrderItem orderItem = db.OrderItems
-                .Include(oi => oi.Order)
-                .Include(oi => oi.Offer.Product)
-                .FirstOrDefault(oi => oi.Id == id);
-
+                                    .Include(o => o.Order)
+                                    .Include(o => o.Offer.Product)
+                                    .FirstOrDefault(o => o.Id == id);
             if (orderItem == null)
             {
                 return HttpNotFound();
             }
-
-            Order order;
-            if (!HasPermission(orderItem.OrderId, out order))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете видаляти цю позицію.");
-            }
-
             return View(orderItem);
         }
 
@@ -223,27 +131,26 @@ namespace ProcurementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            OrderItem orderItem = db.OrderItems.Find(id);
+            OrderItem orderItem = db.OrderItems
+                                    .Include(o => o.Order)
+                                    .Include(o => o.Offer.Product)
+                                    .FirstOrDefault(o => o.Id == id);
+
             if (orderItem == null)
             {
                 return HttpNotFound();
             }
 
-            Order order;
-            if (!HasPermission(orderItem.OrderId, out order))
+            if (orderItem.Order.Status == OrderStatus.ВІДПРАВЛЕНО || orderItem.Order.Status == OrderStatus.ДОСТАВЛЕНО)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете видаляти цю позицію.");
+                ModelState.AddModelError("", "Неможливо видалити позицію з активного (Відправлено) або завершеного (Доставлено) замовлення.");
+                return View(orderItem);
             }
 
-            int orderId = orderItem.OrderId; 
-
             db.OrderItems.Remove(orderItem);
+            db.SaveChanges();
 
-            UpdateOrderTotalAmount(orderId);
-
-            db.SaveChanges(); 
-
-            return RedirectToAction("Details", "Orders", new { id = orderId });
+            return RedirectToAction("Index");
         }
 
         protected override void Dispose(bool disposing)

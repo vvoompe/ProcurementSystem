@@ -1,36 +1,55 @@
 ﻿@model ProcurementSystem.Models.Product
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Видалення Товару";
 }
 
-<h2>Видалити продукт</h2>
+<h2>Видалення Товару</h2>
 
-<h3>Ви впевнені, що хочете видалити цей елемент?</h3>
-<div>
-    <h4>Продукт</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>@Html.DisplayNameFor(m => m.Name)</dt>
-        <dd>@Html.DisplayFor(m => m.Name)</dd>
+<h3>Ви впевнені, що хочете видалити цей товар?</h3>
 
-        <dt>@Html.DisplayNameFor(m => m.Price)</dt>
-        <dd>@(Model.Price.ToString("C"))</dd>
-
-        <dt>Категорія</dt>
-
-        <dd>@(Model.Category?.Name ?? "—")</dd>
-    </dl>
-</div>
-
-@using (Html.BeginForm("Delete", "Products", FormMethod.Post))
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    @Html.HiddenFor(model => model.Id)
 
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-    <div class="form-actions no-color" style="margin-top: 15px;">
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        @Html.ActionLink("Back to List", "Index")
+    <div>
+        <h4>Товар</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Category.Name)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Category.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Price)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Price)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Stock)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Stock)
+            </dd>
+        </dl>
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Видалити" class="btn btn-danger" /> |
+            @Html.ActionLink("Повернутися до Списку", "Index")
+        </div>
     </div>
 }

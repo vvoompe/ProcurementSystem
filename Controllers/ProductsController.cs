@@ -164,7 +164,6 @@ namespace ProcurementSystem.Controllers
                 db.Entry(product).Reference(p => p.Category).Load();
                 return View(product);
             }
-
             var unusedOffers = db.SupplierOffers.Where(so => so.ProductId == id).ToList();
             if (unusedOffers.Any())
             {

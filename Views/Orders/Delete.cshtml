@@ -4,52 +4,54 @@
     ViewBag.Title = "Видалення Замовлення";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Видалення Замовлення</h2>
 
-<h3 class="text-danger">Ви впевнені, що хочете видалити це?</h3>
-<hr />
+<h3>Ви впевнені, що хочете видалити це замовлення?</h3>
 
-@Html.ValidationSummary(false, "", new { @class = "text-danger" })
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
 
-<div>
-    <h4>Замовлення №@Model.Id</h4>
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.User.Login)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.User.Login)
-        </dd>
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
 
-        <dt>
-            @Html.DisplayNameFor(model => model.OrderDate)
-        </dt>
-        <dd>
-            @Model.OrderDate.ToShortDateString()
-        </dd>
+    <div>
+        <h4>Замовлення #@Model.Id</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.User.Login)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.User.Login)
+            </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Status)
-        </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.OrderDate)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.OrderDate)
+            </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.TotalAmount)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.TotalAmount)
-        </dd>
-    </dl>
+            <dt>
+                @Html.DisplayNameFor(model => model.Status)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Status)
+            </dd>
 
-    @using (Html.BeginForm())
-    {
-        @Html.AntiForgeryToken()
+            <dt>
+                @Html.DisplayNameFor(model => model.TotalAmount)
+            </dt>
+            <dd>
+                @Model.TotalAmount.ToString("C")
+            </dd>
 
-        <div class="form-actions no-color" style="margin-top: 15px;">
+        </dl>
+
+
+        <div class="form-actions no-color">
             <input type="submit" value="Видалити" class="btn btn-danger" /> |
-            @Html.ActionLink("Назад до списку", "Index")
+            @Html.ActionLink("Повернутися до Списку", "Index")
         </div>
-    }
-</div>
+    </div>
+}
