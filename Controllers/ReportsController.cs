@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Entity;
 using System.Linq;
-using System.Net;
-using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem;
+using ProcurementSystem.ViewModels;
 using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
@@ -17,113 +13,119 @@ namespace ProcurementSystem.Controllers
         private ProcurementContext db = new ProcurementContext();
 
         // GET: Reports
+        // Це буде наша головна сторінка для вибору звіту
         public ActionResult Index()
         {
-            return View(db.Reports.ToList());
+            var viewModel = new ReportDateRangeViewModel();
+            return View(viewModel);
         }
 
-        // GET: Reports/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Report report = db.Reports
-                              .Include(r => r.ReportOrders.Select(ro => ro.Order.User))
-                              .FirstOrDefault(r => r.Id == id);
-            if (report == null)
-            {
-                return HttpNotFound();
-            }
-            return View(report);
-        }
-
-        // GET: Reports/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Reports/Create
+        // POST: Reports/FinancialReport
+        // Генерує фінансовий звіт
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Period,Type")] Report report)
+        public ActionResult FinancialReport(ReportDateRangeViewModel range)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                db.Reports.Add(report);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                return View("Index", range);
             }
 
-            return View(report);
+            // Встановлюємо кінець дня для EndDate, щоб включити всі замовлення за цей день
+            var endDate = range.EndDate.Date.AddDays(1).AddTicks(-1);
+            var startDate = range.StartDate.Date;
+
+            var orderItems = db.OrderItems
+                .Include(oi => oi.Order)
+                .Include(oi => oi.Offer.Product.Category)
+                .Include(oi => oi.Offer.Supplier)
+                .Where(oi => oi.Order.OrderDate >= startDate && oi.Order.OrderDate <= endDate)
+                .OrderBy(oi => oi.Offer.Product.Category.Name)
+                .ThenBy(oi => oi.Offer.Product.Name)
+                .ToList();
+
+            var report = new FinancialReportViewModel
+            {
+                StartDate = startDate,
+                EndDate = range.EndDate.Date,
+                TotalGrandAmount = orderItems.Sum(oi => oi.Amount)
+            };
+
+            var groupedByCateogry = orderItems.GroupBy(oi => oi.Offer.Product.Category);
+
+            foreach (var categoryGroup in groupedByCateogry)
+            {
+                var categoryReport = new CategoryFinancialReport
+                {
+                    CategoryName = categoryGroup.Key?.Name ?? "Без категорії",
+                    TotalCategoryAmount = categoryGroup.Sum(oi => oi.Amount)
+                };
+
+                foreach (var item in categoryGroup)
+                {
+                    categoryReport.Items.Add(new ReportOrderItemDetail
+                    {
+                        ProductName = item.Offer.Product.Name,
+                        SupplierName = item.Offer.Supplier.Name,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        TotalAmount = item.Amount
+                    });
+                }
+                report.Categories.Add(categoryReport);
+            }
+
+            return View("FinancialReport", report);
         }
 
-        // GET: Reports/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Report report = db.Reports.Find(id);
-            if (report == null)
-            {
-                return HttpNotFound();
-            }
-            return View(report);
-        }
-
-        // POST: Reports/Edit/5
+        // POST: Reports/QuantityReport
+        // Генерує звіт по кількості
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Period,Type")] Report report)
+        public ActionResult QuantityReport(ReportDateRangeViewModel range)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                db.Entry(report).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                return View("Index", range);
             }
-            return View(report);
+
+            var endDate = range.EndDate.Date.AddDays(1).AddTicks(-1);
+            var startDate = range.StartDate.Date;
+
+            var orderItems = db.OrderItems
+                .Include(oi => oi.Order)
+                .Include(oi => oi.Offer.Product.Category)
+                .Where(oi => oi.Order.OrderDate >= startDate && oi.Order.OrderDate <= endDate)
+                .ToList();
+
+            var groupedByProduct = orderItems
+                .GroupBy(oi => oi.Offer.Product)
+                .Select(g => new ProductQuantityReportItem
+                {
+                    ProductName = g.Key.Name,
+                    CategoryName = g.Key.Category?.Name ?? "Без категорії",
+                    TotalQuantitySold = g.Sum(oi => oi.Quantity),
+                    TotalAmount = g.Sum(oi => oi.Amount),
+                    AveragePrice = g.Sum(oi => oi.Amount) / g.Sum(oi => oi.Quantity)
+                })
+                .OrderBy(r => r.CategoryName)
+                .ThenBy(r => r.ProductName)
+                .ToList();
+
+            var report = new QuantityReportViewModel
+            {
+                StartDate = startDate,
+                EndDate = range.EndDate.Date,
+                Items = groupedByProduct
+            };
+
+            return View("QuantityReport", report);
         }
 
-        // GET: Reports/Delete/5
-        public ActionResult Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Report report = db.Reports.Find(id);
-            if (report == null)
-            {
-                return HttpNotFound();
-            }
-            return View(report);
-        }
 
-        // POST: Reports/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
+        // Позбуваємося старих методів, оскільки моделі Report і ReportOrder більше не потрібні
+        // Details, Create, Edit, Delete ... видалено ...
 
-            bool isLinked = db.ReportOrders.Any(ro => ro.ReportId == id);
-
-            Report report = db.Reports.Find(id); // Знаходимо звіт
-
-            if (isLinked)
-            {
-                ModelState.AddModelError("", "Неможливо видалити звіт, оскільки він містить зв'язані заявки.");
-                return View(report); 
-            }
-
-            db.Reports.Remove(report);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
 
         protected override void Dispose(bool disposing)
         {

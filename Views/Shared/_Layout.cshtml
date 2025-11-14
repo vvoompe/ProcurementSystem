@@ -26,12 +26,12 @@
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        if (User.IsInRole("СПІВРОБІТНИК") || User.IsInRole("МЕНЕДЖЕР"))
+                        if (User.IsInRole("СПІВРОБІТНИК") || User.IsInRole("МЕНЕДЖЕР") || User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Заявки", "Index", "Orders", new { area = "" }, new { @class = "nav-link" })</li>
                         }
 
-                        if (User.IsInRole("МЕНЕДЖЕР"))
+                        if (User.IsInRole("МЕНЕДЖЕР") || User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Товари", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
                             <li>@Html.ActionLink("Категорії", "Index", "Categories", new { area = "" }, new { @class = "nav-link" })</li>
@@ -40,7 +40,7 @@
                             <li>@Html.ActionLink("Звіти", "Index", "Reports", new { area = "" }, new { @class = "nav-link" })</li>
                         }
 
-                        if (User.IsInRole("БУХГАЛТЕР"))
+                        if (User.IsInRole("БУХГАЛТЕР") || User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Рахунки", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
                         }
@@ -48,20 +48,7 @@
                         if (User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Користувачі", "Index", "Users", new { area = "" }, new { @class = "nav-link" })</li>
-
-                            if (!User.IsInRole("МЕНЕДЖЕР"))
-                            {
-                                <li>@Html.ActionLink("Товари (Адмін)", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
-                                <li>@Html.ActionLink("Постачальники (Адмін)", "Index", "Suppliers", new { area = "" }, new { @class = "nav-link" })</li>
-                                <li>@Html.ActionLink("Пропозиції (Адмін)", "Index", "SupplierOffers", new { area = "" }, new { @class = "nav-link" })</li>
-                            }
-                            if (!User.IsInRole("БУХГАЛТЕР"))
-                            {
-                                <li>@Html.ActionLink("Рахунки (Адмін)", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
-                            }
-
                             <li>@Html.ActionLink("LINQ", "Index", "LinqQuery", new { area = "" }, new { @class = "nav-link" })</li>
-                            <li>@Html.ActionLink("Зв'язки (ReportOrders)", "Index", "ReportOrders", new { area = "" }, new { @class = "nav-link" })</li>
                         }
                     }
                 </ul>

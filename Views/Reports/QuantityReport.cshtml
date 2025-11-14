@@ -1,0 +1,43 @@
+﻿@model ProcurementSystem.ViewModels.QuantityReportViewModel
+
+@{
+    ViewBag.Title = "Звіт за кількістю";
+}
+
+<h2>Звіт за кількістю проданих товарів з @Model.StartDate.ToString("dd.MM.yyyy") по @Model.EndDate.ToString("dd.MM.yyyy")</h2>
+<hr />
+
+@if (!Model.Items.Any())
+{
+    <div class="alert alert-warning">За вказаний період замовлень не знайдено.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Категорія</th>
+                <th>Товар</th>
+                <th>Продана кількість (од.)</th>
+                <th>Середня ціна</th>
+                <th>Загальна сума</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.CategoryName</td>
+                    <td>@item.ProductName</td>
+                    <td>@item.TotalQuantitySold</td>
+                    <td>@item.AveragePrice.ToString("C")</td>
+                    <td>@item.TotalAmount.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p>
+    @Html.ActionLink("Повернутися до вибору звітів", "Index")
+</p>

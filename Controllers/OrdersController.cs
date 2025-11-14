@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem.ViewModels; 
+using ProcurementSystem.ViewModels;
 
 namespace ProcurementSystem.Controllers
 {
@@ -23,7 +23,6 @@ namespace ProcurementSystem.Controllers
         {
             IQueryable<Order> orders = db.Orders.Include(o => o.User);
 
-
             if (User.IsInRole("СПІВРОБІТНИК"))
             {
                 string currentUserLogin = User.Identity.Name;
@@ -35,7 +34,7 @@ namespace ProcurementSystem.Controllers
                 }
                 else
                 {
-                    orders = orders.Where(o => false); 
+                    orders = orders.Where(o => false);
                 }
             }
 
@@ -51,7 +50,7 @@ namespace ProcurementSystem.Controllers
             }
             Order order = db.Orders
                             .Include(o => o.User)
-                            .Include(o => o.OrderItems.Select(oi => oi.Offer.Product.Category)) // Включаємо всі необхідні дані
+                            .Include(o => o.OrderItems.Select(oi => oi.Offer.Product.Category))
                             .Include(o => o.OrderItems.Select(oi => oi.Offer.Supplier))
                             .Include(o => o.Invoices)
                             .FirstOrDefault(o => o.Id == id);
@@ -61,7 +60,6 @@ namespace ProcurementSystem.Controllers
                 return HttpNotFound();
             }
 
- 
             if (User.IsInRole("СПІВРОБІТНИК"))
             {
                 string currentUserLogin = User.Identity.Name;
@@ -84,13 +82,12 @@ namespace ProcurementSystem.Controllers
             var offers = db.SupplierOffers
                             .Include(so => so.Product)
                             .Include(so => so.Supplier)
-                            .ToList(); 
-
+                            .ToList();
 
             var offerSelectList = offers.AsEnumerable().Select(p => new SelectListItem
             {
                 Value = p.Id.ToString(),
-                Text = $"{p.Product.Name} (Пост: {p.Supplier.Name}) - {p.Price:C}" 
+                Text = $"{p.Product.Name} (Пост: {p.Supplier.Name}) - {p.Price:C}"
             });
 
             viewModel.OfferList = new SelectList(offerSelectList, "Value", "Text");
@@ -112,34 +109,44 @@ namespace ProcurementSystem.Controllers
                 ModelState.AddModelError("", "Помилка автентифікації користувача.");
             }
 
-            var selectedOffer = db.SupplierOffers.Find(viewModel.SupplierOfferId);
+            var selectedOffer = db.SupplierOffers
+                                  .Include(so => so.Product)
+                                  .FirstOrDefault(so => so.Id == viewModel.SupplierOfferId);
+
             if (selectedOffer == null)
             {
                 ModelState.AddModelError("SupplierOfferId", "Обраний товар не знайдено.");
+            }
+            else
+            {
+                if (selectedOffer.Product.Stock < viewModel.Quantity)
+                {
+                    ModelState.AddModelError("Quantity", $"Неможливо замовити більше, ніж є на складі. Доступно: {selectedOffer.Product.Stock}");
+                }
             }
 
             if (ModelState.IsValid)
             {
                 Order order = new Order();
-                order.UserId = currentUser.Id; 
-                order.Description = viewModel.Description; 
-                order.OrderDate = DateTime.Now; 
-                order.Status = OrderStatus.ВІДПРАВЛЕНО; 
-
+                order.UserId = currentUser.Id;
+                order.Description = viewModel.Description;
+                order.OrderDate = DateTime.Now;
+                order.Status = OrderStatus.ВІДПРАВЛЕНО;
                 order.TotalAmount = selectedOffer.Price * viewModel.Quantity;
-
                 db.Orders.Add(order);
-                db.SaveChanges(); 
 
                 OrderItem orderItem = new OrderItem();
-                orderItem.OrderId = order.Id; 
-                orderItem.SupplierOfferId = viewModel.SupplierOfferId; 
-                orderItem.Quantity = viewModel.Quantity; 
-                orderItem.UnitPrice = selectedOffer.Price; 
-
+                orderItem.OrderId = order.Id;
+                orderItem.SupplierOfferId = viewModel.SupplierOfferId;
+                orderItem.Quantity = viewModel.Quantity;
+                orderItem.UnitPrice = selectedOffer.Price;
                 orderItem.Amount = selectedOffer.Price * viewModel.Quantity;
-
                 db.OrderItems.Add(orderItem);
+
+                var productToUpdate = db.Products.Find(selectedOffer.Product.Id);
+                productToUpdate.Stock -= viewModel.Quantity;
+                db.Entry(productToUpdate).State = EntityState.Modified;
+
                 db.SaveChanges();
 
                 return RedirectToAction("Details", new { id = order.Id });
@@ -157,7 +164,7 @@ namespace ProcurementSystem.Controllers
 
             viewModel.OfferList = new SelectList(offerSelectList, "Value", "Text", viewModel.SupplierOfferId);
 
-            return View(viewModel); 
+            return View(viewModel);
         }
 
         // GET: Orders/Edit/5

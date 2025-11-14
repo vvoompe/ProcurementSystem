@@ -1,0 +1,58 @@
+﻿@model ProcurementSystem.ViewModels.FinancialReportViewModel
+
+@{
+    ViewBag.Title = "Фінансовий звіт";
+}
+
+<h2>Фінансовий звіт за період з @Model.StartDate.ToString("dd.MM.yyyy") по @Model.EndDate.ToString("dd.MM.yyyy")</h2>
+<hr />
+
+@if (!Model.Categories.Any())
+{
+    <div class="alert alert-warning">За вказаний період замовлень не знайдено.</div>
+}
+else
+{
+    foreach (var category in Model.Categories)
+    {
+        <h3 class="mt-4">Категорія: @category.CategoryName</h3>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Товар</th>
+                    <th>Постачальник</th>
+                    <th>Кількість</th>
+                    <th>Ціна за од.</th>
+                    <th>Сума</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in category.Items)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.SupplierName</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.UnitPrice.ToString("C")</td>
+                        <td>@item.TotalAmount.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end"><strong>Загалом по категорії:</strong></td>
+                    <td><strong>@category.TotalCategoryAmount.ToString("C")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+
+    <hr />
+    <div class="alert alert-success fs-4 text-end">
+        <strong>ЗАГАЛЬНА СУМА (по всіх категоріях): @Model.TotalGrandAmount.ToString("C")</strong>
+    </div>
+}
+
+<p>
+    @Html.ActionLink("Повернутися до вибору звітів", "Index")
+</p>

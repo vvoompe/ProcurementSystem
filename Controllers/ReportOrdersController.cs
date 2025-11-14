@@ -8,10 +8,11 @@ using System.Web;
 using System.Web.Mvc;
 using ProcurementSystem;
 using ProcurementSystem.Models;
-using ProcurementSystem.Models.Enums; 
+using ProcurementSystem.Models.Enums; // Додано для доступу до OrderStatus
 
 namespace ProcurementSystem.Controllers
 {
+    // 1. Додано: Захист всього контролера (на основі _Layout, доступ тільки Адміну/Менеджеру)
     [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
     public class ReportOrdersController : Controller
     {
@@ -20,6 +21,7 @@ namespace ProcurementSystem.Controllers
         // GET: ReportOrders
         public ActionResult Index()
         {
+            // 2. Додано: Включаємо пов'язані дані для відображення у таблиці
             var reportOrders = db.ReportOrders.Include(r => r.Order.User).Include(r => r.Report);
             return View(reportOrders.ToList());
         }
@@ -31,6 +33,7 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            // 3. Додано: Включаємо всі пов'язані дані
             ReportOrder reportOrder = db.ReportOrders
                                         .Include(r => r.Order.User)
                                         .Include(r => r.Report)
@@ -140,7 +143,8 @@ namespace ProcurementSystem.Controllers
 
             if (reportOrder.Order != null &&
                (reportOrder.Order.Status == OrderStatus.ДОСТАВЛЕНО ||
-                reportOrder.Order.Status == OrderStatus.СКАСОВАНО))
+                reportOrder.Order.Status == OrderStatus.СКАСОВАНО ||
+                reportOrder.Order.Status == OrderStatus.ПІДТВЕРДЖЕНО))
             {
                 ModelState.AddModelError("", $"Неможливо видалити зв'язок: заявка №{reportOrder.OrderId} вже має фінальний статус '{reportOrder.Order.Status}'.");
 
