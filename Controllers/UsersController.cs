@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
-using ProcurementSystem.Data;
 using ProcurementSystem.Models;
 
 namespace ProcurementSystem.Controllers
 {
-    [Authorize(Roles = "АДМІНІСТРАТОР")]
+    [Authorize]
     public class UsersController : Controller
     {
         private ProcurementContext db = new ProcurementContext();
@@ -38,16 +33,17 @@ namespace ProcurementSystem.Controllers
         }
 
         // GET: Users/Create
+
+        [Authorize(Roles = "АДМІНІСТРАТОР")]
         public ActionResult Create()
         {
             return View();
         }
 
         // POST: Users/Create
-        // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
-        // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "АДМІНІСТРАТОР")]
         public ActionResult Create([Bind(Include = "Id,Login,Password,Role")] User user)
         {
             if (ModelState.IsValid)
@@ -61,6 +57,7 @@ namespace ProcurementSystem.Controllers
         }
 
         // GET: Users/Edit/5
+        [Authorize(Roles = "АДМІНІСТРАТОР")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -76,10 +73,9 @@ namespace ProcurementSystem.Controllers
         }
 
         // POST: Users/Edit/5
-        // Чтобы защититься от атак чрезмерной передачи данных, включите определенные свойства, для которых следует установить привязку. Дополнительные 
-        // сведения см. в разделе https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "АДМІНІСТРАТОР")]
         public ActionResult Edit([Bind(Include = "Id,Login,Password,Role")] User user)
         {
             if (ModelState.IsValid)
@@ -92,6 +88,7 @@ namespace ProcurementSystem.Controllers
         }
 
         // GET: Users/Delete/5
+        [Authorize(Roles = "АДМІНІСТРАТОР")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -109,6 +106,7 @@ namespace ProcurementSystem.Controllers
         // POST: Users/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "АДМІНІСТРАТОР")]
         public ActionResult DeleteConfirmed(int id)
         {
             User user = db.Users.Find(id);

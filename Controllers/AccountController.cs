@@ -1,9 +1,8 @@
 ﻿using ProcurementSystem.Models;
-using ProcurementSystem.ViewModels; 
+using ProcurementSystem.ViewModels;
 using System.Linq;
 using System.Web.Mvc;
-using System.Web.Security;
-using System;
+using System.Web.Security; 
 
 namespace ProcurementSystem.Controllers
 {
@@ -11,17 +10,17 @@ namespace ProcurementSystem.Controllers
     {
         private ProcurementContext db = new ProcurementContext();
 
-        //
         // GET: /Account/Login
+        [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
-        //
         // POST: /Account/Login
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
         {
@@ -30,30 +29,11 @@ namespace ProcurementSystem.Controllers
                 return View(model);
             }
 
-            var loginNormalized = (model.Login ?? string.Empty).Trim().ToLower();
-            var passwordTrimmed = (model.Password ?? string.Empty).Trim();
-
-            var user = db.Users.FirstOrDefault(u => u.Login.ToLower() == loginNormalized && u.Password == passwordTrimmed);
+            var user = db.Users.FirstOrDefault(u => u.Login == model.Login && u.Password == model.Password);
 
             if (user != null)
             {
-                var rolesString = user.Role.ToString();
-                var ticket = new FormsAuthenticationTicket(
-                    1,
-                    user.Login,
-                    DateTime.Now,
-                    DateTime.Now.AddHours(8),
-                    false,
-                    rolesString
-                );
-
-                string encryptedTicket = FormsAuthentication.Encrypt(ticket);
-                var authCookie = new System.Web.HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
-                {
-                    HttpOnly = true,
-                    Secure = FormsAuthentication.RequireSSL
-                };
-                Response.Cookies.Add(authCookie);
+                FormsAuthentication.SetAuthCookie(user.Login, false);
 
                 if (!string.IsNullOrEmpty(returnUrl))
                 {
@@ -70,14 +50,22 @@ namespace ProcurementSystem.Controllers
             return View(model);
         }
 
-        //
         // POST: /Account/LogOff
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
-            FormsAuthentication.SignOut(); 
+            FormsAuthentication.SignOut();
             return RedirectToAction("Index", "Products");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
