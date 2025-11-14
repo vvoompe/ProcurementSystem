@@ -15,11 +15,11 @@ namespace ProcurementSystem.Controllers
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
-            return View();
+            return View(new LoginViewModel());
         }
 
-        // POST: /Account/Login
-        [HttpPost]
+            // POST: /Account/Login
+            [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
