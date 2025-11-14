@@ -1,0 +1,36 @@
+@model ProcurementSystem.ViewModels.LoginViewModel
+
+@{
+    ViewBag.Title = "Увійти";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <input type="hidden" name="returnUrl" value="@(ViewBag.ReturnUrl ?? "")" />
+
+    <div class="form-group mb-2">
+        @Html.LabelFor(m => m.Login, htmlAttributes: new { @class = "control-label" })
+        @Html.TextBoxFor(m => m.Login, new { @class = "form-control", placeholder = "Логін" })
+        @Html.ValidationMessageFor(m => m.Login, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group mb-2">
+        @Html.LabelFor(m => m.Password, htmlAttributes: new { @class = "control-label" })
+        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Пароль" })
+        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Увійти</button>
+        <a href="@Url.Action("Index", "Products")" class="btn btn-link">На головну</a>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

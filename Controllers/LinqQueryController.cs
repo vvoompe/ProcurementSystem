@@ -60,6 +60,7 @@ namespace ProcurementSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "АДМІНІСТРАТОР")] 
         public ActionResult AddUser(string login, string password)
         {
             try
@@ -94,7 +95,7 @@ namespace ProcurementSystem.Controllers
                 TempData["UserError"] = "Помилка при додаванні користувача: " + ex.Message;
             }
 
-            
+
             return RedirectToAction("Index");
         }
     }

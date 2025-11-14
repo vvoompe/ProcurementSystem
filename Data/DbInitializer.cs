@@ -13,9 +13,11 @@ namespace ProcurementSystem.Data
             // 1. Користувачі
             var user1 = new User { Login = "admin_user", Password = "password", Role = UserRole.АДМІНІСТРАТОР };
             var user2 = new User { Login = "manager_user", Password = "password", Role = UserRole.МЕНЕДЖЕР };
+            var user3 = new User { Login = "Admin", Password = "12345", Role = UserRole.АДМІНІСТРАТОР };
 
             context.Users.Add(user1);
             context.Users.Add(user2);
+            context.Users.Add(user3);
 
             // 2. Категорії
             var category1 = new Category { Name = "Ноутбуки", Description = "Портативні комп'ютери" };

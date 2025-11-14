@@ -1,18 +1,18 @@
 ﻿using ProcurementSystem.Models;
+using ProcurementSystem.ViewModels; 
 using System.Linq;
 using System.Web.Mvc;
-using System.Web.Security; // Важливо для автентифікації
+using System.Web.Security;
+using System;
 
 namespace ProcurementSystem.Controllers
 {
     public class AccountController : Controller
     {
-        // Наш зв'язок з базою даних
         private ProcurementContext db = new ProcurementContext();
 
         //
         // GET: /Account/Login
-        // Цей метод просто показує сторінку з формою логіну
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
@@ -21,7 +21,6 @@ namespace ProcurementSystem.Controllers
 
         //
         // POST: /Account/Login
-        // Цей метод спрацьовує, коли користувач натискає кнопку "Увійти"
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
@@ -31,29 +30,40 @@ namespace ProcurementSystem.Controllers
                 return View(model);
             }
 
-            // Шукаємо користувача в базі даних
-            var user = db.Users.FirstOrDefault(u => u.Login == model.Login && u.Password == model.Password);
+            var loginNormalized = (model.Login ?? string.Empty).Trim().ToLower();
+            var passwordTrimmed = (model.Password ?? string.Empty).Trim();
+
+            var user = db.Users.FirstOrDefault(u => u.Login.ToLower() == loginNormalized && u.Password == passwordTrimmed);
 
             if (user != null)
             {
-                // УСПІШНИЙ ЛОГІН
-                // Ми створюємо "cookie" автентифікації.
-                // Система запам'ятає користувача.
-                FormsAuthentication.SetAuthCookie(user.Login, false); // false - не запам'ятовувати надовго
+                var rolesString = user.Role.ToString();
+                var ticket = new FormsAuthenticationTicket(
+                    1,
+                    user.Login,
+                    DateTime.Now,
+                    DateTime.Now.AddHours(8),
+                    false,
+                    rolesString
+                );
 
-                // Якщо користувач намагався увійти на захищену сторінку,
-                // повертаємо його туди.
+                string encryptedTicket = FormsAuthentication.Encrypt(ticket);
+                var authCookie = new System.Web.HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+                {
+                    HttpOnly = true,
+                    Secure = FormsAuthentication.RequireSSL
+                };
+                Response.Cookies.Add(authCookie);
+
                 if (!string.IsNullOrEmpty(returnUrl))
                 {
                     return Redirect(returnUrl);
                 }
 
-                // Інакше перенаправляємо на головну сторінку
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Products");
             }
             else
             {
-                // Якщо користувача не знайдено, показуємо помилку
                 ModelState.AddModelError("", "Неправильний логін або пароль.");
             }
 
@@ -62,13 +72,12 @@ namespace ProcurementSystem.Controllers
 
         //
         // POST: /Account/LogOff
-        // Метод для виходу з системи
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
-            FormsAuthentication.SignOut(); // Видаляємо cookie
-            return RedirectToAction("Index", "Home");
+            FormsAuthentication.SignOut(); 
+            return RedirectToAction("Index", "Products");
         }
     }
 }
