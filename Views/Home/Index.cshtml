@@ -31,7 +31,7 @@
         @if (User.IsInRole("СПІВРОБІТНИК"))
         {
             <div class="col-md-6">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Створити Нову Заявку</h4>
                         <p class="card-text">Потрібно замовити канцтовари, техніку чи інші матеріали? Створіть нову заявку на закупівлю тут.</p>
@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Мої Заявки</h4>
                         <p class="card-text">Перегляньте список усіх ваших заявок та відстежуйте їхні статуси (напр., "В обробці", "Схвалено", "Доставлено").</p>
@@ -57,7 +57,7 @@
         @if (User.IsInRole("МЕНЕДЖЕР"))
         {
             <div class="col-md-4">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Керування Заявками</h4>
                         <p class="card-text">Переглядайте, схвалюйте та редагуйте заявки, що надійшли від співробітників.</p>
@@ -66,7 +66,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Каталог Товарів</h4>
                         <p class="card-text">Керуйте загальним каталогом товарів, категорій та пропозицій від постачальників.</p>
@@ -75,7 +75,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Постачальники</h4>
                         <p class="card-text">Керуйте базою даних постачальників та їхніми контактними даними.</p>
@@ -88,7 +88,7 @@
         @if (User.IsInRole("БУХГАЛТЕР"))
         {
             <div class="col-md-6">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Рахунки (Інвойси)</h4>
                         <p class="card-text">Обробляйте рахунки-фактури, що надійшли, та реєструйте оплати за замовленнями.</p>
@@ -103,7 +103,7 @@
         @if (User.IsInRole("АДМІНІСТРАТОР"))
         {
             <div class="col-md-6">
-                <div class="card h-100">
+                <div class="card h-100 card-dashboard">
                     <div class="card-body">
                         <h4 class="card-title">Керування Користувачами</h4>
                         <p class="card-text">Додавайте нових користувачів, видаляйте старих та призначайте їм відповідні ролі (Менеджер, Бухгалтер тощо).</p>
