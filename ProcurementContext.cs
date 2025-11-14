@@ -20,8 +20,6 @@ namespace ProcurementSystem
         public DbSet<User> Users { get; set; }
         public DbSet<SupplierOffer> SupplierOffers { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
-        public DbSet<Report> Reports { get; set; }
-        public DbSet<ReportOrder> ReportOrders { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

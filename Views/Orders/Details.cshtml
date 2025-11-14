@@ -1,79 +1,130 @@
 ﻿@model ProcurementSystem.Models.Order
-@using ProcurementSystem.Models.Enums
 
 @{
-    ViewBag.Title = "Деталі заявки";
+    ViewBag.Title = "Details";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>Деталі Замовлення №@Model.Id</h2>
+
+@* ДОДАНО: Блок для генерації рахунку *@
+@if (ViewBag.CanGenerateInvoice)
+{
+    <div class="alert alert-info">
+        <p>Для цього замовлення ще не створено рахунок-фактуру.</p>
+        @using (Html.BeginForm("GenerateInvoice", "Invoices", new { orderId = Model.Id }, FormMethod.Post, new { @style = "display:inline;" }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="submit" value="Створити Рахунок-фактуру" class="btn btn-success" />
+        }
+    </div>
+}
 
 <div>
-    <h4>Заявка №@Model.Id</h4>
     <hr />
     <dl class="dl-horizontal">
-        <dt>@Html.DisplayNameFor(model => model.OrderDate)</dt>
-        <dd>@Html.DisplayFor(model => model.OrderDate)</dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.Login)
+        </dt>
 
-        <dt>@Html.DisplayNameFor(model => model.Status)</dt>
-        <dd>@Html.DisplayFor(model => model.Status)</dd>
+        <dd>
+            @Html.DisplayFor(model => model.User.Login)
+        </dd>
 
-        <dt>@Html.DisplayNameFor(model => model.Description)</dt>
-        <dd>@Html.DisplayFor(model => model.Description)</dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
 
-        <dt>@Html.DisplayNameFor(model => model.TotalAmount)</dt>
-        <dd>@Html.DisplayFor(model => model.TotalAmount)</dd>
+        <dd>
+            @Html.DisplayFor(model => model.OrderDate)
+        </dd>
 
-        <dt>@Html.DisplayNameFor(model => model.User)</dt>
-        <dd>@(Model.User != null ? Model.User.Login : "N/A")</dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalAmount)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalAmount)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+
     </dl>
-</div>
 
-<hr />
-
-<h4>Товари в заявці</h4>
-
-
-@if ((User.IsInRole("СПІВРОБІТНИК") || User.IsInRole("МЕНЕДЖЕР")) && Model.Status == OrderStatus.ВІДПРАВЛЕНО)
-{
-    <p>
-        @Html.ActionLink("Додати товар до заявки", "Create", "OrderItems", new { orderId = Model.Id }, new { @class = "btn btn-primary" })
-    </p>
-}
-
-<table class="table table-main-view table-striped table-hover">
-    <tr>
-        <th>Товар (Пропозиція)</th>
-        <th>Кількість</th>
-        <th>Ціна за одиницю</th>
-        <th></th>
-    </tr>
-
-    @if (Model.OrderItems != null)
+    <h4>Позиції Замовлення</h4>
+    @if (Model.OrderItems != null && Model.OrderItems.Any())
     {
-        foreach (var item in Model.OrderItems)
-        {
+        <table class="table">
             <tr>
-                <td>
-                    @(item.Offer?.Product?.Name ?? "Товар не вказано")
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Quantity)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UnitPrice)
-                </td>
-                <td>
-                    @if (Model.Status == OrderStatus.ВІДПРАВЛЕНО)
-                    {
-                        @Html.ActionLink("Редагувати", "Edit", "OrderItems", new { id = item.Id }, null) @:|
-                        @Html.ActionLink("Видалити", "Delete", "OrderItems", new { id = item.Id }, null)
-                    }
-                </td>
+                <th>Товар</th>
+                <th>Категорія</th>
+                <th>Постачальник</th>
+                <th>Кількість</th>
+                <th>Ціна за од.</th>
+                <th>Сума</th>
             </tr>
-        }
+            @foreach (var item in Model.OrderItems)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Offer.Product.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Offer.Product.Category.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Offer.Supplier.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Quantity)</td>
+                    <td>@Html.DisplayFor(modelItem => item.UnitPrice)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Amount)</td>
+                </tr>
+            }
+        </table>
     }
-</table>
+    else
+    {
+        <p>Позиції замовлення відсутні.</p>
+    }
 
+    <h4>Рахунки по цьому замовленню</h4>
+    @if (Model.Invoices != null && Model.Invoices.Any())
+    {
+        <table class="table">
+            <tr>
+                <th>Номер Рахунку</th>
+                <th>Сума</th>
+                <th>Дата оплати до</th>
+                <th>Статус</th>
+                <th></th>
+            </tr>
+            @foreach (var invoice in Model.Invoices)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => invoice.Id)</td>
+                    <td>@Html.DisplayFor(modelItem => invoice.Amount)</td>
+                    <td>@Html.DisplayFor(modelItem => invoice.DueDate)</td>
+                    <td>@Html.DisplayFor(modelItem => invoice.PaymentStatus)</td>
+                    <td>
+                        @Html.ActionLink("До деталей", "Details", "Invoices", new { id = invoice.Id }, new { @class = "btn btn-xs btn-default" })
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <p>Рахунки по цьому замовленню відсутні.</p>
+    }
+</div>
 <p>
-    @Html.ActionLink("Назад до списку", "Index")
+    @Html.ActionLink("Редагувати", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Повернутися до списку", "Index")
 </p>

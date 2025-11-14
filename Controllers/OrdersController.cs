@@ -52,7 +52,7 @@ namespace ProcurementSystem.Controllers
                             .Include(o => o.User)
                             .Include(o => o.OrderItems.Select(oi => oi.Offer.Product.Category))
                             .Include(o => o.OrderItems.Select(oi => oi.Offer.Supplier))
-                            .Include(o => o.Invoices)
+                            .Include(o => o.Invoices) // Це вже було, чудово
                             .FirstOrDefault(o => o.Id == id);
 
             if (order == null)
@@ -69,6 +69,14 @@ namespace ProcurementSystem.Controllers
                     return new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Ви не можете переглядати чужі замовлення.");
                 }
             }
+
+            // ДОДАНО: Логіка для кнопки генерації рахунку
+            // Показати кнопку, якщо:
+            // 1. Рахунки ще не існують для цього замовлення.
+            // 2. Користувач - Бухгалтер АБО Адміністратор.
+            ViewBag.CanGenerateInvoice = !order.Invoices.Any() &&
+                                         (User.IsInRole("БУХГАЛТЕР") || User.IsInRole("АДМІНІСТРАТОР"));
+
 
             return View(order);
         }
@@ -193,11 +201,15 @@ namespace ProcurementSystem.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
-        public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,TotalAmount,UserId,Description")] Order order)
+        public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,UserId,Description")] Order order)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(order).State = EntityState.Modified;
+
+                // Ми вручну вимикаємо зміну TotalAmount, оскільки це поле лише для читання
+                db.Entry(order).Property(o => o.TotalAmount).IsModified = false;
+
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -234,16 +246,14 @@ namespace ProcurementSystem.Controllers
         {
             bool hasOrderItems = db.OrderItems.Any(oi => oi.OrderId == id);
             bool hasInvoices = db.Invoices.Any(i => i.OrderId == id);
-            bool hasReportOrders = db.ReportOrders.Any(ro => ro.OrderId == id);
 
             Order order = db.Orders.Find(id);
 
-            if (hasOrderItems || hasInvoices || hasReportOrders)
+            if (hasOrderItems || hasInvoices)
             {
                 string errorMessage = "Неможливо видалити замовлення. ";
                 if (hasOrderItems) errorMessage += "Існують пов'язані позиції. ";
                 if (hasInvoices) errorMessage += "Існують пов'язані рахунки. ";
-                if (hasReportOrders) errorMessage += "Існують пов'язані звіти.";
 
                 ModelState.AddModelError("", errorMessage);
 
