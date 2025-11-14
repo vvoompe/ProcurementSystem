@@ -1,5 +1,4 @@
-﻿@* Це правильний файл для списку товарів *@
-@model IEnumerable<ProcurementSystem.Models.Product>
+﻿@model IEnumerable<ProcurementSystem.Models.Product>
 
 @{
     ViewBag.Title = "Список Товарів";
@@ -34,7 +33,7 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Category.Name)
+                @(item.Category?.Name ?? "—")
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)

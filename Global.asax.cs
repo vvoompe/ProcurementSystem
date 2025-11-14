@@ -18,6 +18,13 @@ namespace ProcurementSystem
         {
             Database.SetInitializer(new DbInitializer());
 
+            // Принудительно инициализируем контекст при старте — это создаст/заполняет БД по DbInitializer,
+            // если она ещё не создана (полезно в разработке).
+            using (var ctx = new ProcurementContext())
+            {
+                ctx.Database.Initialize(force: true);
+            }
+
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
