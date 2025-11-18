@@ -193,11 +193,18 @@ namespace ProcurementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Order order = db.Orders.Find(id);
+            Order order = db.Orders.Include(o => o.Invoices).FirstOrDefault(o => o.Id == id);
             if (order == null)
             {
                 return HttpNotFound();
             }
+
+            if (order.Status == OrderStatus.ВІДПРАВЛЕНО || order.Invoices.Any(i => i.PaymentStatus == PaymentStatus.ОПЛАЧЕНО))
+            {
+                TempData["ErrorMessage"] = "Редагування заборонено: замовлення вже відправлено або має оплачений рахунок.";
+                return RedirectToAction("Index");
+            }
+
             ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
             ViewBag.Status = new SelectList(
                 Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),
@@ -213,6 +220,16 @@ namespace ProcurementSystem.Controllers
         [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,UserId,Description")] Order order)
         {
+            var dbOrder = db.Orders.Include(o => o.Invoices).AsNoTracking().FirstOrDefault(o => o.Id == order.Id);
+            if (dbOrder != null)
+            {
+                if (dbOrder.Status == OrderStatus.ВІДПРАВЛЕНО || dbOrder.Invoices.Any(i => i.PaymentStatus == PaymentStatus.ОПЛАЧЕНО))
+                {
+                    TempData["ErrorMessage"] = "Редагування заборонено: замовлення вже відправлено або має оплачений рахунок.";
+                    return RedirectToAction("Index");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 db.Entry(order).State = EntityState.Modified;

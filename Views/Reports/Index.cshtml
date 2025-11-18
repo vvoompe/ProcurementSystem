@@ -8,6 +8,13 @@
 <p>Оберіть період для генерації та збереження нового звіту.</p>
 <hr />
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
 <div class="row">
     <div class="col-md-6">
         <h4>Фінансовий звіт за категоріями</h4>

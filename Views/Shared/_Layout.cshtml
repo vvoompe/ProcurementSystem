@@ -43,6 +43,7 @@
                         if (User.IsInRole("БУХГАЛТЕР") || User.IsInRole("АДМІНІСТРАТОР"))
                         {
                             <li>@Html.ActionLink("Рахунки", "Index", "Invoices", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Звіти", "Index", "Reports", new { area = "" }, new { @class = "nav-link" })</li>
                         }
 
                         if (User.IsInRole("АДМІНІСТРАТОР"))

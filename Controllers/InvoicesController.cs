@@ -21,7 +21,7 @@ namespace ProcurementSystem.Controllers
         public ActionResult Index()
         {
             var invoices = db.Invoices.Include(i => i.Order.User);
-            return View(invoices.ToList());
+            return View(invoices.OrderBy(i => i.OrderId).ToList()); ;
         }
 
         // GET: Invoices/Details/5
@@ -153,9 +153,9 @@ namespace ProcurementSystem.Controllers
                 return HttpNotFound();
             }
 
-            if (invoice.PaymentStatus == PaymentStatus.ОЧІКУЄТЬСЯ || invoice.PaymentStatus == PaymentStatus.ЧАСТКОВО_ОПЛАЧЕНО || invoice.PaymentStatus == PaymentStatus.ПРОТЕРМІНОВАНО)
+            if (invoice.PaymentStatus == PaymentStatus.ОЧІКУЄТЬСЯ || invoice.PaymentStatus == PaymentStatus.ЧАСТКОВО_ОПЛАЧЕНО || invoice.PaymentStatus == PaymentStatus.ПРОТЕРМІНОВАНО || invoice.PaymentStatus == PaymentStatus.ОПЛАЧЕНО)
             {
-                ModelState.AddModelError("", "Неможливо видалити активний рахунок (який очікує на оплату або прострочений). Змініть статус на 'Оплачено', якщо потрібно.");
+                ModelState.AddModelError("", "Неможливо видалити активний рахунок (який очікує на оплату або оплачений). Змініть статус на 'Архівовано', якщо потрібно.");
                 return View(invoice);
             }
 

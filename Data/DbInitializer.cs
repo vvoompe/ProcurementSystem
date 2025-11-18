@@ -11,7 +11,6 @@ namespace ProcurementSystem.Data
     {
         protected override void Seed(ProcurementContext context)
         {
-            // 1. Користувачі (НЕ ЗМІНЕНО)
             var users = new List<User>
             {
                 new User { Login = "admin", Password = "admin_password", Role = UserRole.АДМІНІСТРАТОР },
@@ -22,7 +21,6 @@ namespace ProcurementSystem.Data
             users.ForEach(u => context.Users.Add(u));
             context.SaveChanges();
 
-            // 2. Категорії
             var categories = new List<Category>
             {
                 new Category { Name = "Офісна Техніка", Description = "Принтери, сканери, МФУ" },
@@ -35,7 +33,6 @@ namespace ProcurementSystem.Data
             categories.ForEach(c => context.Categories.Add(c));
             context.SaveChanges();
 
-            // 3. Постачальники
             var suppliers = new List<Supplier>
             {
                 new Supplier { Name = "ТОВ 'ТехноСвіт'", Contacts = "info@techno.ua, +380441234567" },
@@ -47,7 +44,6 @@ namespace ProcurementSystem.Data
             suppliers.ForEach(s => context.Suppliers.Add(s));
             context.SaveChanges();
 
-            // 4. Товари
             var products = new List<Product>
             {
                 // Офісна Техніка

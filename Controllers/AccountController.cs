@@ -18,8 +18,8 @@ namespace ProcurementSystem.Controllers
             return View(new LoginViewModel());
         }
 
-            // POST: /Account/Login
-            [HttpPost]
+        // POST: /Account/Login
+        [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Login(LoginViewModel model, string returnUrl)
@@ -40,7 +40,7 @@ namespace ProcurementSystem.Controllers
                     return Redirect(returnUrl);
                 }
 
-                return RedirectToAction("Index", "Products");
+                return RedirectToAction("Index", "Home");
             }
             else
             {
@@ -56,7 +56,7 @@ namespace ProcurementSystem.Controllers
         public ActionResult LogOff()
         {
             FormsAuthentication.SignOut();
-            return RedirectToAction("Index", "Products");
+            return RedirectToAction("Index", "Home");
         }
 
         protected override void Dispose(bool disposing)

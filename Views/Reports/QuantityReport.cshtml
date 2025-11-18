@@ -36,6 +36,34 @@ else
             }
         </tbody>
     </table>
+
+    <hr />
+
+    <h3>Загальна кількість за категоріями</h3>
+    <table class="table table-bordered table-striped" style="width: 60%;">
+        <thead>
+            <tr>
+                <th>Категорія</th>
+                <th>Загальна кількість (од.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var categoryGroup in Model.Items
+                                              .GroupBy(item => item.CategoryName)
+                                              .Select(group => new
+                                              {
+                                                  CategoryName = group.Key,
+                                                  TotalQuantity = group.Sum(item => item.TotalQuantitySold)
+                                              })
+                                              .OrderBy(res => res.CategoryName))
+            {
+                <tr>
+                    <td>@categoryGroup.CategoryName</td>
+                    <td>@categoryGroup.TotalQuantity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 <p>
