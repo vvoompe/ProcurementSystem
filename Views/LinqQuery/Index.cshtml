@@ -1,142 +1,77 @@
-﻿@{
-    ViewBag.Title = "LINQ Запити";
+﻿@model ProcurementSystem.ViewModels.BenchmarkViewModel
 
-    var expensiveProducts = ViewBag.ExpensiveProducts as List<ProcurementSystem.Models.Product>;
-    var laptops = ViewBag.Laptops as List<ProcurementSystem.Models.Product>;
-    var totalSum = (decimal)ViewBag.TotalOrdersSum;
-    var productsPerCategory = ViewBag.ProductsPerCategory as List<ProcurementSystem.ViewModels.CategoryProductCountViewModel>;
-    var suppliersWithNoOffers = ViewBag.SuppliersWithNoOffers as List<ProcurementSystem.Models.Supplier>;
+@{
+    ViewBag.Title = "Лабораторна робота: Паралелізм";
 }
 
-<h2>@ViewBag.Title</h2>
-<p>Результати нових LINQ запитів.</p>
-<hr />
+<h2>Аналіз продуктивності запитів (LINQ vs PLINQ vs TPL)</h2>
 
-@if (TempData["UserSuccess"] != null)
+@if (TempData["Message"] != null)
 {
-    <div class="alert alert-success">@TempData["UserSuccess"]</div>
+    <div class="alert alert-info">@TempData["Message"]</div>
 }
-@if (TempData["UserError"] != null)
-{
-    <div class="alert alert-danger">@TempData["UserError"]</div>
-}
-<h3>1. Товари дорожче 50 000 (з `ViewBag.ExpensiveProducts`)</h3>
-@if (expensiveProducts != null && expensiveProducts.Any())
-{
-    <table class="table table-sm table-striped">
-        <tr>
-            <th>Назва</th>
-            <th>Ціна</th>
-            <th>Категорія</th>
-        </tr>
-        @foreach (var item in expensiveProducts)
+
+<div class="well">
+    <h4>Поточний стан бази даних</h4>
+    <p>Кількість продуктів у таблиці: <strong>@Model.TotalRecords</strong></p>
+
+    <div class="btn-group">
+        @using (Html.BeginForm("GenerateData", "LinqQuery", FormMethod.Post, new { style = "display:inline;" }))
         {
-            <tr>
-                <td>@item.Name</td>
-                <td>@item.Price.ToString("C")</td>
-                <td>@item.Category.Name</td>
-            </tr>
+             <button type="submit" class="btn btn-warning" onclick="return confirm('Це може зайняти деякий час. Продовжити?')">
+                 <i class="glyphicon glyphicon-plus"></i> Додати до 100,000 записів
+             </button>
         }
-    </table>
-}
-else
-{
-    <p>Немає товарів дорожче 50 000.</p>
-}
-<hr />
 
-<h3>2. Всі товари з категорією "Ноутбуки" (з `ViewBag.Laptops`)</h3>
-@if (laptops != null && laptops.Any())
-{
-    <table class="table table-sm table-striped">
-        <tr>
-            <th>Назва</th>
-            <th>Ціна</th>
-            <th>Категорія</th>
-        </tr>
-        @foreach (var item in laptops)
+        @using (Html.BeginForm("RunTests", "LinqQuery", FormMethod.Post, new { style = "display:inline; margin-left: 10px;" }))
         {
-            <tr>
-                <td>@item.Name</td>
-                <td>@item.Price.ToString("C")</td>
-                <td>@item.Category.Name</td>
-            </tr>
+            <button type="submit" class="btn btn-success">
+                <i class="glyphicon glyphicon-play"></i> Запустити тести порівняння
+            </button>
         }
-    </table>
-}
-else
-{
-    <p>Немає товарів у категорії "Ноутбуки".</p>
-}
-<hr />
-
-<h3>3. Загальна сума всіх замовлень (з `ViewBag.TotalOrdersSum`)</h3>
-<h4>@totalSum.ToString("C")</h4>
-<hr />
-
-<h3>4. Кількість товарів по категоріях (з `ViewBag.ProductsPerCategory`)</h3>
-@if (productsPerCategory != null && productsPerCategory.Any())
-{
-    <table class="table table-sm table-striped">
-        <tr>
-            <th>Категорія</th>
-            <th>Кількість товарів</th>
-        </tr>
-        @foreach (var item in productsPerCategory)
-        {
-            <tr>
-                <td>@item.CategoryName</td>
-                <td>@item.ProductCount</td>
-            </tr>
-        }
-    </table>
-}
-else
-{
-    <p>Немає даних по категоріях.</p>
-}
-<hr />
-
-<h3>5. Постачальники без пропозицій (з `ViewBag.SuppliersWithNoOffers`)</h3>
-@if (suppliersWithNoOffers != null && suppliersWithNoOffers.Any())
-{
-    <table class="table table-sm table-striped">
-        <tr>
-            <th>Назва Постачальника</th>
-            <th>Контакти</th>
-        </tr>
-        @foreach (var item in suppliersWithNoOffers)
-        {
-            <tr>
-                <td>@item.Name</td>
-                <td>@item.Contacts</td>
-            </tr>
-        }
-    </table>
-}
-else
-{
-    <p>Всі постачальники мають пропозиції.</p>
-}
-<hr />
-
-<h3>6. Додати нового користувача (Вимога CUD)</h3>
-<p>Ця форма демонструє доповнення запису у таблицю <code>User</code> (Приклад №2 з методички).</p>
-
-
-@using (Html.BeginForm("AddUser", "LinqQuery", FormMethod.Post))
-{
-    @Html.AntiForgeryToken()
-
-    <div class="form-group mb-2" style="max-width: 400px;">
-        <label for="login" class="form-label">Логін:</label>
-        <input type="text" name="login" class="form-control" />
+        
+        @Html.ActionLink("Очистити таблицю", "ClearResults", null, new { @class = "btn btn-default" })
     </div>
+</div>
 
-    <div class="form-group mb-2" style="max-width: 400px;">
-        <label for="password" class="form-label">Пароль:</label>
-        <input type="password" name="password" class="form-control" />
-    </div>
+@if (Model.Results != null && Model.Results.Any())
+{
+    <h3>Результати тестування</h3>
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr class="info">
+                <th>Технологія / Метод</th>
+                <th>Малий обсяг (20 записів), мс</th>
+                <th>Великий обсяг (@Model.TotalRecords записів), мс</th>
+                <th>Прискорення (Large Data)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                // Знаходимо базовий час (послідовний) для розрахунку прискорення
+                double baseTime = Model.Results.FirstOrDefault(r => r.MethodName.Contains("Послідовний"))?.TimeLargeData ?? 1;
+            }
 
-    <input type="submit" value="Додати користувача" class="btn btn-primary" />
+            @foreach (var res in Model.Results)
+            {
+                <tr>
+                    <td>@res.MethodName</td>
+                    <td>@res.TimeSmallData.ToString("F4")</td>
+                    <td>@res.TimeLargeData.ToString("F2")</td>
+                    <td>
+                        @if (res.TimeLargeData > 0)
+                        {
+                            var speedup = baseTime / res.TimeLargeData;
+                            <span class="@(speedup > 1.0 ? "text-success" : "text-danger")">
+                                @speedup.ToString("F2")x
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="text-muted">
+        <em>* Примітка: Для малого обсягу даних паралельні обчислення зазвичай повільніші через накладні витрати на створення потоків (Overhead).</em>
+    </p>
 }
