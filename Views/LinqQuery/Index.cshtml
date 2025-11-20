@@ -18,9 +18,9 @@
     <div class="btn-group">
         @using (Html.BeginForm("GenerateData", "LinqQuery", FormMethod.Post, new { style = "display:inline;" }))
         {
-             <button type="submit" class="btn btn-warning" onclick="return confirm('Це може зайняти деякий час. Продовжити?')">
-                 <i class="glyphicon glyphicon-plus"></i> Додати до 100,000 записів
-             </button>
+            <button type="submit" class="btn btn-warning" onclick="return confirm('Це може зайняти деякий час. Продовжити?')">
+                <i class="glyphicon glyphicon-plus"></i> Додати до 100,000 записів
+            </button>
         }
 
         @using (Html.BeginForm("RunTests", "LinqQuery", FormMethod.Post, new { style = "display:inline; margin-left: 10px;" }))
@@ -29,7 +29,7 @@
                 <i class="glyphicon glyphicon-play"></i> Запустити тести порівняння
             </button>
         }
-        
+
         @Html.ActionLink("Очистити таблицю", "ClearResults", null, new { @class = "btn btn-default" })
     </div>
 </div>
