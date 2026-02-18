@@ -163,6 +163,9 @@
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SupplierOffer.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Patterns\Observer\IOrderObserver.cs.cs" />
+    <Compile Include="Patterns\Observer\ConcreteObservers.cs" />
+    <Compile Include="Patterns\Observer\OrderPublisher.cs" />
     <Compile Include="ProcurementContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\BenchmarkResultViewModel.cs" />

@@ -220,23 +220,31 @@ namespace ProcurementSystem.Controllers
         [Authorize(Roles = "МЕНЕДЖЕР, АДМІНІСТРАТОР")]
         public ActionResult Edit([Bind(Include = "Id,OrderDate,Status,UserId,Description")] Order order)
         {
-            var dbOrder = db.Orders.Include(o => o.Invoices).AsNoTracking().FirstOrDefault(o => o.Id == order.Id);
-            if (dbOrder != null)
-            {
-                if (dbOrder.Status == OrderStatus.ВІДПРАВЛЕНО || dbOrder.Invoices.Any(i => i.PaymentStatus == PaymentStatus.ОПЛАЧЕНО))
-                {
-                    TempData["ErrorMessage"] = "Редагування заборонено: замовлення вже відправлено або має оплачений рахунок.";
-                    return RedirectToAction("Index");
-                }
-            }
-
             if (ModelState.IsValid)
             {
-                db.Entry(order).State = EntityState.Modified;
-                db.Entry(order).Property(o => o.TotalAmount).IsModified = false;
-                db.SaveChanges();
+
+                var orderInDb = db.Orders.Include(o => o.User).FirstOrDefault(o => o.Id == order.Id);
+
+                if (orderInDb != null)
+                {
+                    var publisher = new ProcurementSystem.Patterns.Observer.OrderStatusPublisher();
+
+                    publisher.Attach(new ProcurementSystem.Patterns.Observer.EmailNotificationObserver());
+
+                    publisher.Attach(new ProcurementSystem.Patterns.Observer.LogFileObserver());
+
+
+                    publisher.ChangeStatus(orderInDb, order.Status);
+
+                    orderInDb.Description = order.Description;
+
+                    db.Entry(orderInDb).State = EntityState.Modified;
+                    db.SaveChanges();
+                }
+
                 return RedirectToAction("Index");
             }
+
             ViewBag.UserId = new SelectList(db.Users, "Id", "Login", order.UserId);
             ViewBag.Status = new SelectList(
                 Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().Select(s => new { Id = (int)s, Name = s.ToString() }),
